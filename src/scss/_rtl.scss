@@ -1,0 +1,77 @@
+$font-ar: 'Tajawal', system-ui, -apple-system, sans-serif;
+
+html[dir='rtl'] {
+  --cui-font-sans-serif: #{$font-ar};
+  --cui-body-font-family: #{$font-ar};
+
+  body {
+    font-family: $font-ar;
+    text-align: right;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .sidebar,
+  .header,
+  .footer,
+  .card,
+  .form-control,
+  .form-select,
+  .btn,
+  .table,
+  .dropdown-menu,
+  .nav-link,
+  .breadcrumb,
+  .pagination,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: inherit;
+  }
+
+  /* Sidebar à droite : CoreUI utilise inset-inline-start (pas sidebar-end) */
+  .sidebar.sidebar-fixed:not(.sidebar-end) {
+    inset-inline-start: 0;
+    inset-inline-end: auto;
+  }
+
+  .sidebar.sidebar-fixed:not(.sidebar-end):not(.hide) ~ .wrapper,
+  .sidebar.sidebar-fixed:not(.sidebar-end):not(.hide) ~ * {
+    --cui-sidebar-occupy-start: var(--cui-sidebar-width, 16rem);
+    --cui-sidebar-occupy-end: 0;
+  }
+
+  .wrapper {
+    padding-inline-start: var(--cui-sidebar-occupy-start, 0) !important;
+    padding-inline-end: var(--cui-sidebar-occupy-end, 0) !important;
+  }
+
+  .header .ms-auto {
+    margin-inline-start: auto !important;
+    margin-inline-end: 0 !important;
+  }
+
+  .btn-link.ps-0 {
+    padding-inline-start: 0 !important;
+    padding-inline-end: 0.5rem !important;
+  }
+
+  .me-1,
+  .me-2 {
+    margin-inline-start: 0.25rem !important;
+    margin-inline-end: 0 !important;
+  }
+
+  .ms-1,
+  .ms-2 {
+    margin-inline-end: 0.25rem !important;
+    margin-inline-start: 0 !important;
+  }
+
+  .float-end {
+    float: inline-start !important;
+  }
+}

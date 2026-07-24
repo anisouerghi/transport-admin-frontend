@@ -1,0 +1,80 @@
+<c-modal
+  alignment="center"
+  [visible]="visible"
+  (visibleChange)="onVisibleChange($event)"
+  id="userFormModal"
+>
+  <c-modal-header>
+    <h5 cModalTitle>{{ isEdit ? 'Edit user' : 'Add user' }}</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()" [validated]="submitted()" id="userForm">
+      <c-row class="g-3">
+        <c-col md="6">
+          <label cLabel for="username">Username</label>
+          <input
+            cFormControl
+            id="username"
+            formControlName="username"
+            [valid]="fieldTouchedValid('username')"
+            autocomplete="username"
+          />
+          @if (fieldInvalid('username')) {
+            <div class="invalid-feedback d-block">Username is required (max 100).</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="name">Name</label>
+          <input
+            cFormControl
+            id="name"
+            formControlName="name"
+            [valid]="fieldTouchedValid('name')"
+            autocomplete="name"
+          />
+          @if (fieldInvalid('name')) {
+            <div class="invalid-feedback d-block">Name is required (max 150).</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="email">Email</label>
+          <input
+            cFormControl
+            id="email"
+            type="email"
+            formControlName="email"
+            [valid]="fieldTouchedValid('email')"
+            autocomplete="email"
+          />
+          @if (fieldInvalid('email')) {
+            <div class="invalid-feedback d-block">Valid email is required.</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="password">Password</label>
+          <input
+            cFormControl
+            id="password"
+            type="password"
+            formControlName="password"
+            [valid]="fieldTouchedValid('password')"
+            autocomplete="new-password"
+          />
+          @if (fieldInvalid('password')) {
+            <div class="invalid-feedback d-block">Password is required (8 to 100 characters).</div>
+          }
+          @if (isEdit) {
+            <small class="text-body-secondary">Leave empty to keep the current password.</small>
+          }
+        </c-col>
+      </c-row>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Cancel</button>
+    <button cButton color="primary" type="submit" form="userForm" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : 'Save' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

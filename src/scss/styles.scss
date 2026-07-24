@@ -1,0 +1,13 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Import styles with default layout.
+@use "@coreui/coreui/scss/coreui" as * with (
+  $enable-deprecation-messages: false
+);
+
+@use "theme";
+@use "custom";
+@use "print";
+@use "rtl";
+@use "ng-select-overrides";
+

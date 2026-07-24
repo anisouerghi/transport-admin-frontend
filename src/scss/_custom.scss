@@ -1,0 +1,227 @@
+// Styles applicatifs Back-Office TRANSTU
+
+@use "scrollbar";
+
+// Import Google Font Inter
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --cui-font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+  --cui-primary: #007a4d; // Vert TRANSTU
+  --cui-primary-rgb: 0, 122, 77;
+  --cui-accent: #ffc107; // Jaune TRANSTU
+  --cui-accent-rgb: 255, 193, 7;
+  --cui-border-color-professional: #b1b7c1;
+  --cui-input-focus-border-color: var(--cui-primary);
+  --cui-input-focus-box-shadow: 0 0 0 0.2rem rgba(var(--cui-primary-rgb), 0.15);
+}
+
+// 1. Global Font Scaling (Compact Mode)
+html {
+  font-size: 14px;
+}
+
+body {
+  font-family: var(--cui-font-family-sans-serif);
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+// 2. Buttons Modernization
+.btn {
+  --cui-btn-padding-y: 0.4rem;
+  --cui-btn-padding-x: 1rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.25s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.btn-sm {
+  --cui-btn-padding-y: 0.25rem;
+  --cui-btn-padding-x: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background-color: var(--cui-primary);
+  border-color: var(--cui-primary);
+
+  &:hover {
+    background-color: #00633e;
+    border-color: #004229;
+    box-shadow: 0 4px 12px rgba(0, 122, 77, 0.3);
+  }
+}
+
+.btn-warning {
+  background-color: var(--cui-accent);
+  border-color: var(--cui-accent);
+  color: #212529;
+
+  &:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  }
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  border-color: #e74c3c;
+  color: white;
+
+  &:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    color: white;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+  }
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+
+  &:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+  }
+}
+
+// 3. Compact Forms
+.form-control,
+.form-select,
+.input-group-text {
+  padding: 0.45rem 0.8rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--cui-border-color-professional) !important;
+  border-radius: 8px;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  &:focus {
+    border-color: var(--cui-input-focus-border-color) !important;
+    box-shadow: var(--cui-input-focus-box-shadow) !important;
+  }
+}
+
+.form-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+// 4. Card Modernization (Identité Visuelle Globale)
+.card {
+  border: none;
+  border-top: 4px solid var(--cui-accent); // Trait jaune distinctif
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.25rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .card-footer {
+    background-color: #fafbfa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+}
+
+// 5. Tables Modernization
+.table {
+  --cui-table-cell-padding-y: 0.75rem;
+  --cui-table-cell-padding-x: 1rem;
+  font-size: 0.95rem;
+  vertical-align: middle;
+
+  thead th {
+    background-color: rgba(var(--cui-primary-rgb), 0.05);
+    color: var(--cui-primary);
+    border-bottom: 2px solid rgba(var(--cui-primary-rgb), 0.2) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s ease;
+    &:hover {
+      background-color: rgba(var(--cui-accent-rgb), 0.05) !important;
+    }
+  }
+
+  td, th {
+    border-color: #ebedef;
+  }
+}
+
+// 6. Badges & Indicators
+.badge {
+  font-weight: 600;
+  padding: 0.4em 0.6em;
+  border-radius: 6px;
+}
+
+// Sidebar plus douce
+.sidebar {
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+// Header avec ombre légère
+.header {
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05) !important;
+  background-color: #ffffff;
+}
+
+// Typographie Globale
+h1, .h1, h2, .h2, h3, .h3, h4, .h4 {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+// 7. Utilitaires TRANSTU
+.text-transtu-primary { color: var(--cui-primary) !important; }
+.text-transtu-accent { color: var(--cui-accent) !important; }
+.bg-transtu-primary { background-color: var(--cui-primary) !important; color: white !important; }
+.bg-transtu-accent { background-color: var(--cui-accent) !important; color: #212529 !important; }
+
+.border-transtu-accent { border-color: var(--cui-accent) !important; }
+.border-transtu-primary { border-color: var(--cui-primary) !important; }
+
+// Ajout d'ombres douces
+.shadow-soft {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+

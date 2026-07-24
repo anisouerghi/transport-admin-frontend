@@ -1,0 +1,168 @@
+<c-card class="mb-4">
+  <c-card-header class="d-flex justify-content-between align-items-center">
+    <strong>Users</strong>
+    <button cButton color="primary" type="button" (click)="openCreate()">
+      <svg cIcon name="cilPlus" class="me-1"></svg>
+      Add user
+    </button>
+  </c-card-header>
+  <c-card-body>
+    <form cForm [formGroup]="filterForm" (ngSubmit)="search()" class="mb-4">
+      <c-row class="g-3 align-items-end">
+        <c-col md="3">
+          <label cLabel for="filter-username">Username</label>
+          <input cFormControl id="filter-username" formControlName="username" placeholder="Search…" />
+        </c-col>
+        <c-col md="3">
+          <label cLabel for="filter-name">Name</label>
+          <input cFormControl id="filter-name" formControlName="name" placeholder="Search…" />
+        </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-email">Email</label>
+          <input cFormControl id="filter-email" formControlName="email" placeholder="Search…" />
+        </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-active">Status</label>
+          <select cSelect id="filter-active" formControlName="active" class="form-select">
+            <option value="">All</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </c-col>
+        <c-col md="2" class="d-flex gap-2">
+          <button cButton color="primary" type="submit">Filter</button>
+          <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">
+            Reset
+          </button>
+        </c-col>
+      </c-row>
+    </form>
+
+    @if (loading()) {
+      <div class="text-center py-5">
+        <c-spinner></c-spinner>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table cTable hover striped align="middle" class="mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.userId) {
+              <tr>
+                <td>{{ user.userId }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <c-badge [color]="user.active ? 'success' : 'secondary'">
+                    {{ user.active ? 'Active' : 'Inactive' }}
+                  </c-badge>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button
+                    cButton
+                    color="info"
+                    variant="outline"
+                    size="sm"
+                    class="me-1"
+                    type="button"
+                    (click)="openEdit(user)"
+                  >
+                    Edit
+                  </button>
+                  @if (user.active) {
+                    <button
+                      cButton
+                      color="warning"
+                      variant="outline"
+                      size="sm"
+                      class="me-1"
+                      type="button"
+                      (click)="askDeactivate(user)"
+                    >
+                      Deactivate
+                    </button>
+                  } @else {
+                    <button
+                      cButton
+                      color="success"
+                      variant="outline"
+                      size="sm"
+                      class="me-1"
+                      type="button"
+                      (click)="askActivate(user)"
+                    >
+                      Activate
+                    </button>
+                  }
+                  <button
+                    cButton
+                    color="danger"
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    (click)="askDelete(user)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-body-secondary py-4">
+                  No users found.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+        <small class="text-body-secondary">
+          {{ totalElements() }} result(s) — page {{ page() + 1 }} / {{ totalPages() }}
+        </small>
+        <c-pagination>
+          <li cPageItem [disabled]="page() === 0">
+            <a cPageLink role="button" (click)="goToPage(page() - 1)">Previous</a>
+          </li>
+          @for (p of pages(); track p) {
+            <li cPageItem [active]="p === page()">
+              <a cPageLink role="button" (click)="goToPage(p)">{{ p + 1 }}</a>
+            </li>
+          }
+          <li cPageItem [disabled]="page() >= totalPages() - 1">
+            <a cPageLink role="button" (click)="goToPage(page() + 1)">Next</a>
+          </li>
+        </c-pagination>
+      </div>
+    }
+  </c-card-body>
+</c-card>
+
+<app-user-form-modal
+  [visible]="formModalVisible()"
+  [user]="editingUser()"
+  (visibleChange)="formModalVisible.set($event)"
+  (saved)="load()"
+/>
+
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  [confirmLabel]="confirmLabel"
+  [confirmColor]="confirmColor"
+  [busy]="actionBusy()"
+  (visibleChange)="confirmVisible.set($event)"
+  (confirm)="onConfirm()"
+/>

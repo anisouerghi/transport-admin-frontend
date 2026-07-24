@@ -1,0 +1,50 @@
+<!-- Sidebar admin -->
+<c-sidebar
+  #sidebar1="cSidebar"
+  class="d-print-none sidebar sidebar-fixed"
+  [class.border-end]="!rtl"
+  [class.border-start]="rtl"
+  colorScheme="dark"
+  id="sidebar1"
+  visible
+>
+  <c-sidebar-header class="bg-white border-bottom border-transtu-accent" style="border-bottom-width: 3px !important;">
+    <c-sidebar-brand [routerLink]="['/dashboard']" class="text-decoration-none">
+      <img style="width: 100px; margin-left: 24px;" src="assets/images/transtu_logo.png" alt="TRANSTU Logo" class="sidebar-brand-full" height="32" />
+      <img src="assets/images/transtu_logo.png" alt="Logo" class="sidebar-brand-narrow" height="32" />
+    </c-sidebar-brand>
+  </c-sidebar-header>
+
+  <ng-scrollbar pointerEventsMethod="scrollbar" visibility="hover">
+    <c-sidebar-nav [navItems]="navItems" dropdownMode="close" compact />
+  </ng-scrollbar>
+
+  @if (!sidebar1.narrow) {
+    <c-sidebar-footer cSidebarToggle="sidebar1" class="border-top d-none d-lg-flex" toggle="unfoldable" style="cursor: pointer;">
+      <button cSidebarToggler aria-label="Réduire le menu"></button>
+    </c-sidebar-footer>
+  }
+</c-sidebar>
+
+<div class="wrapper d-flex flex-column min-vh-100">
+  <app-default-header
+    [cShadowOnScroll]="'sm'"
+    class="mb-4 d-print-none header header-sticky p-0 shadow-soft border-bottom-0"
+    position="sticky"
+    sidebarId="sidebar1"
+  />
+  <div class="body flex-grow-1">
+    <c-container fluid class="h-auto px-3 position-relative">
+      @if (routeLoading()) {
+        <div class="route-loading-overlay text-center py-5 text-body-secondary">
+          <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+          {{ loadingLabel }}
+        </div>
+      }
+      <router-outlet (activate)="routeLoading.set(false)" />
+    </c-container>
+  </div>
+  <app-default-footer />
+</div>
+
+<app-toast-container />

@@ -1,0 +1,16 @@
+# Angular
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Environment local
+src/environments/environment.prod.ts
+
+# Cache
+.angular/

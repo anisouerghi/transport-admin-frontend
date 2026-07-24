@@ -1,0 +1,15 @@
+@media print {
+  .print-hide,
+  c-sidebar,
+  app-default-header,
+  app-default-footer,
+  .sidebar,
+  .header {
+    display: none !important;
+  }
+
+  .body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

@@ -1,0 +1,84 @@
+<ng-container>
+  <c-container [fluid]="true" class="border-bottom px-4">
+    <button
+      [cSidebarToggle]="sidebarId()"
+      cHeaderToggler
+      class="btn"
+      toggle="visible"
+      style="margin-inline-start: -14px;"
+      aria-label="Menu utilisateur"
+    >
+      <svg cIcon name="cilMenu" size="lg"></svg>
+    </button>
+
+    <c-header-nav class="d-none d-md-flex ms-3">
+      <c-nav-item>
+        <span class="nav-link text-body-secondary fw-bold">transport signalement admin</span>
+      </c-nav-item>
+    </c-header-nav>
+
+    <c-header-nav class="d-none d-md-flex ms-auto">
+      <div class="d-flex align-items-center gap-3 px-3 border-end">
+        <div class="d-flex flex-column align-items-end">
+          <div class="fw-bold d-flex align-items-center">
+            <svg cIcon name="cilUser" size="sm" class="me-2 text-transtu-primary"></svg>
+            {{ displayName() }}
+          </div>
+          <div class="small text-medium-emphasis d-flex align-items-center mt-1">
+            <span class="badge bg-transtu-accent">Administration</span>
+          </div>
+        </div>
+      </div>
+    </c-header-nav>
+
+    <c-header-nav class="ms-3">
+      <ng-container *ngTemplateOutlet="themeDropdown" />
+    </c-header-nav>
+
+    <c-header-nav class="mx-0">
+      <ng-container *ngTemplateOutlet="userDropdown" />
+    </c-header-nav>
+  </c-container>
+  <c-container [fluid]="true" class="px-4">
+    <c-breadcrumb-router />
+  </c-container>
+</ng-container>
+
+<ng-template #userDropdown>
+  <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
+    <button [caret]="false" cDropdownToggle class="py-0 px-2" aria-label="Menu utilisateur">
+      <span class="avatar avatar-md rounded-circle bg-transtu-primary text-white d-inline-flex align-items-center justify-content-center shadow-sm">
+        {{ userInitials() }}
+      </span>
+    </button>
+    <ul cDropdownMenu class="pt-0 w-auto">
+      <li>
+        <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2 rounded-top">
+          {{ displayName() }}
+        </h6>
+      </li>
+    </ul>
+  </c-dropdown>
+</ng-template>
+
+<ng-template #themeDropdown>
+  <c-dropdown alignment="end" variant="nav-item">
+    <button [caret]="false" cDropdownToggle aria-label="Thème">
+      <svg cIcon [name]="icons()" size="lg"></svg>
+    </button>
+    <div cDropdownMenu>
+      @for (mode of colorModes; track mode.name) {
+        <button
+          (click)="colorMode.set(mode.name)"
+          [active]="colorMode() === mode.name"
+          cDropdownItem
+          class="d-flex align-items-center"
+          type="button"
+        >
+          <svg cIcon class="me-2" [name]="mode.icon" size="lg"></svg>
+          {{ mode.text }}
+        </button>
+      }
+    </div>
+  </c-dropdown>
+</ng-template>
