@@ -15,4 +15,14 @@ export const navItems: INavData[] = [
     url: '/users',
     iconComponent: { name: 'cil-user' },
   },
+  {
+    name: 'Support types',
+    url: '/support-types',
+    iconComponent: { name: 'cil-list' },
+  },
+  {
+    name: 'Transport supports',
+    url: '/transport-supports',
+    iconComponent: { name: 'cilList' },
+  },
 ];

@@ -1,0 +1,32 @@
+<c-modal alignment="center" [visible]="visible" (visibleChange)="onVisibleChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isEdit ? 'Edit support type' : 'Add support type' }}</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()" [validated]="submitted()" id="supportTypeForm">
+      <c-row class="g-3">
+        <c-col md="6">
+          <label cLabel for="code">Code</label>
+          <input cFormControl id="code" formControlName="code" [valid]="fieldTouchedValid('code')" />
+          @if (fieldInvalid('code')) {
+            <div class="invalid-feedback d-block">Code is required (max 50).</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="label">Label</label>
+          <input cFormControl id="label" formControlName="label" [valid]="fieldTouchedValid('label')" />
+          @if (fieldInvalid('label')) {
+            <div class="invalid-feedback d-block">Label is required (max 150).</div>
+          }
+        </c-col>
+      </c-row>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Cancel</button>
+    <button cButton color="primary" type="submit" form="supportTypeForm" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : 'Save' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

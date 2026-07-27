@@ -22,6 +22,16 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/users/users.module').then((m) => m.UsersModule),
       },
+      {
+        path: 'support-types',
+        loadChildren: () =>
+          import('./features/support-types/support-types.module').then((m) => m.SupportTypesModule),
+      },
+      {
+        path: 'transport-supports',
+        loadChildren: () =>
+          import('./features/transport-supports/transport-supports.module').then((m) => m.TransportSupportsModule),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

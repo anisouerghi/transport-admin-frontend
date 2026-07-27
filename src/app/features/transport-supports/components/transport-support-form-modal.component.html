@@ -1,0 +1,52 @@
+<c-modal alignment="center" size="lg" [visible]="visible" (visibleChange)="onVisibleChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isEdit ? 'Edit transport support' : 'Add transport support' }}</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()" [validated]="submitted()" id="transportSupportForm">
+      <c-row class="g-3">
+        <c-col md="6">
+          <label cLabel for="reference">Reference</label>
+          <input cFormControl id="reference" formControlName="reference" [valid]="fieldTouchedValid('reference')" />
+          @if (fieldInvalid('reference')) {
+            <div class="invalid-feedback d-block">Reference is required.</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="label">Label</label>
+          <input cFormControl id="label" formControlName="label" [valid]="fieldTouchedValid('label')" />
+          @if (fieldInvalid('label')) {
+            <div class="invalid-feedback d-block">Label is required.</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="supportTypeId">Support type</label>
+          <select cSelect id="supportTypeId" formControlName="supportTypeId" class="form-select">
+            <option [value]="0" disabled>Select…</option>
+            @for (t of supportTypes(); track t.supportTypeId) {
+              <option [value]="t.supportTypeId">{{ t.code }} — {{ t.label }}</option>
+            }
+          </select>
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="supportStatus">Status</label>
+          <select cSelect id="supportStatus" formControlName="supportStatus" class="form-select">
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </c-col>
+      </c-row>
+      @if (!isEdit) {
+        <small class="text-body-secondary d-block mt-3">QR code will be generated automatically by the server.</small>
+      }
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Cancel</button>
+    <button cButton color="primary" type="submit" form="transportSupportForm" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : 'Save' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

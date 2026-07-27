@@ -1,0 +1,94 @@
+<c-card class="mb-4">
+  <c-card-header class="d-flex justify-content-between align-items-center">
+    <strong>Transport supports</strong>
+    <button cButton color="primary" type="button" (click)="openCreate()">
+      <svg cIcon name="cilPlus" class="me-1"></svg>
+      Add transport support
+    </button>
+  </c-card-header>
+  <c-card-body>
+    <form cForm [formGroup]="filterForm" (ngSubmit)="search()" class="mb-4">
+      <c-row class="g-3 align-items-end">
+        <c-col md="2"><label cLabel>Reference</label><input cFormControl formControlName="reference" placeholder="Search…" /></c-col>
+        <c-col md="2"><label cLabel>Label</label><input cFormControl formControlName="label" placeholder="Search…" /></c-col>
+        <c-col md="2"><label cLabel>UUID</label><input cFormControl formControlName="uuid" placeholder="Search…" /></c-col>
+        <c-col md="2">
+          <label cLabel>Support status</label>
+          <select cSelect formControlName="supportStatus" class="form-select"><option value="">All</option>@for (s of supportStatuses; track s) { <option [value]="s">{{ s }}</option> }</select>
+        </c-col>
+        <c-col md="2">
+          <label cLabel>QR status</label>
+          <select cSelect formControlName="qrStatus" class="form-select"><option value="">All</option>@for (s of qrStatuses; track s) { <option [value]="s">{{ s }}</option> }</select>
+        </c-col>
+        <c-col md="2">
+          <label cLabel>Support type</label>
+          <select cSelect formControlName="supportTypeId" class="form-select"><option value="">All</option>@for (t of supportTypes(); track t.supportTypeId) { <option [value]="t.supportTypeId">{{ t.code }}</option> }</select>
+        </c-col>
+        <c-col md="12" class="d-flex gap-2">
+          <button cButton color="primary" type="submit">Filter</button>
+          <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">Reset</button>
+        </c-col>
+      </c-row>
+    </form>
+
+    @if (loading()) {
+      <div class="text-center py-5"><c-spinner></c-spinner></div>
+    } @else {
+      <div class="table-responsive">
+        <table cTable hover striped align="middle" class="mb-0">
+          <thead>
+            <tr>
+              <th role="button" (click)="toggleSort('reference')">Reference</th>
+              <th role="button" (click)="toggleSort('label')">Label</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>QR</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item.transportSupportId) {
+              <tr>
+                <td>{{ item.reference }}</td>
+                <td>{{ item.label }}</td>
+                <td>{{ item.supportTypeCode }}</td>
+                <td><c-badge [color]="item.supportStatus === 'ACTIVE' ? 'success' : 'secondary'">{{ item.supportStatus }}</c-badge></td>
+                <td>{{ item.qrStatus ?? '—' }}</td>
+                <td class="text-end text-nowrap">
+                  <button cButton color="secondary" variant="outline" size="sm" class="me-1" type="button" (click)="openDetail(item)">View</button>
+                  <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openEdit(item)">Edit</button>
+                  <button cButton color="warning" variant="outline" size="sm" class="me-1" type="button" (click)="regenerateQr(item)">QR</button>
+                  <button cButton color="danger" variant="outline" size="sm" type="button" (click)="askDelete(item)">Delete</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="text-center text-body-secondary py-4">No transport supports found.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+        <small class="text-body-secondary">{{ totalElements() }} result(s) — page {{ page() + 1 }} / {{ totalPages() }}</small>
+        <c-pagination>
+          <li cPageItem [disabled]="page() === 0"><a cPageLink role="button" (click)="goToPage(page() - 1)">Previous</a></li>
+          @for (p of pages(); track p) { <li cPageItem [active]="p === page()"><a cPageLink role="button" (click)="goToPage(p)">{{ p + 1 }}</a></li> }
+          <li cPageItem [disabled]="page() >= totalPages() - 1"><a cPageLink role="button" (click)="goToPage(page() + 1)">Next</a></li>
+        </c-pagination>
+      </div>
+    }
+  </c-card-body>
+</c-card>
+
+<app-transport-support-form-modal [visible]="formModalVisible()" [item]="editingItem()" (visibleChange)="formModalVisible.set($event)" (saved)="load()" />
+<app-transport-support-detail-modal [visible]="detailModalVisible()" [item]="detailItem()" (visibleChange)="detailModalVisible.set($event)" />
+
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  title="Delete transport support"
+  [message]="'Delete « ' + (confirmItem()?.reference ?? '') + ' » ?'"
+  confirmLabel="Delete"
+  confirmColor="danger"
+  [busy]="actionBusy()"
+  (visibleChange)="confirmVisible.set($event)"
+  (confirm)="onConfirmDelete()"
+/>
