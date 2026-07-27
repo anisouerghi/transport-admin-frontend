@@ -28,6 +28,14 @@ export const routes: Routes = [
           import('./features/support-types/support-types.module').then((m) => m.SupportTypesModule),
       },
       {
+        path: 'report-types',
+        loadComponent: () =>
+          import('./features/report-types/pages/report-type-list.page').then(
+            (m) => m.ReportTypeListPage
+          ),
+        data: { title: 'Report types' },
+      },
+      {
         path: 'transport-supports',
         loadChildren: () =>
           import('./features/transport-supports/transport-supports.module').then((m) => m.TransportSupportsModule),
