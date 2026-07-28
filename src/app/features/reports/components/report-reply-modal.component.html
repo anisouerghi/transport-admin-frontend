@@ -1,0 +1,45 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)">
+  <c-modal-header>
+    <h5 cModalTitle>Reply to report</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    @if (!report) {
+      <div class="text-center py-4 text-body-secondary">No report selected.</div>
+    } @else {
+      <div class="mb-3">
+        <strong>Reference:</strong> {{ report?.reference }}
+      </div>
+      <form cForm [formGroup]="form" (ngSubmit)="submit()">
+        <c-row class="g-3">
+          <c-col xs="12">
+            <label cLabel for="reply-message">Message</label>
+            <textarea
+              cFormControl
+              id="reply-message"
+              formControlName="message"
+              rows="5"
+              class="form-control"
+              placeholder="Write your reply..."
+            ></textarea>
+          </c-col>
+          <c-col xs="12">
+            <label cLabel for="reply-status">Status</label>
+            <select cSelect id="reply-status" formControlName="statusId" class="form-select">
+              <option value="">Keep current</option>
+              @for (s of statuses(); track s.statusId) {
+                <option [value]="s.statusId">{{ s.label }}</option>
+              }
+            </select>
+          </c-col>
+        </c-row>
+      </form>
+    }
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Cancel</button>
+    <button cButton color="primary" type="button" (click)="submit()" [disabled]="saving()">
+      Save reply
+    </button>
+  </c-modal-footer>
+</c-modal>
