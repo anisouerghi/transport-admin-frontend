@@ -98,3 +98,10 @@
 </c-card>
 
 <app-report-detail-modal [visible]="detailVisible()" [reportId]="currentReportId()" (visibleChange)="detailVisible.set($event)"></app-report-detail-modal>
+<app-report-reply-modal
+  [visible]="replyVisible()"
+  [report]="currentReport()"
+  [userId]="currentUserId"
+  (visibleChange)="replyVisible.set($event)"
+  (replied)="load()"
+></app-report-reply-modal>

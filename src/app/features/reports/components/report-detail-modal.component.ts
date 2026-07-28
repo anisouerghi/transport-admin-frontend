@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ModalBodyComponent, ModalComponent, ModalFooterComponent, ModalHeaderComponent, ModalTitleDirective, ButtonCloseDirective, ButtonDirective } from '@coreui/angular';
 import { SpinnerComponent } from '@coreui/angular';
 import { ReportsService } from '../services/reports.service';
-import { Report } from '../models/report.model';
+import { Report, ReportReply } from '../models/report.model';
 
 @Component({
   selector: 'app-report-detail-modal',
@@ -20,13 +20,16 @@ export class ReportDetailModalComponent implements OnChanges {
 
   readonly loading = signal(false);
   readonly report = signal<Report | null>(null);
+  readonly replies = signal<ReportReply[]>([]);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && !this.visible) {
       this.report.set(null);
+      this.replies.set([]);
     }
     if (this.visible && this.reportId != null) {
       this.load(this.reportId);
+      this.loadReplies(this.reportId);
     }
   }
 
@@ -42,6 +45,13 @@ export class ReportDetailModalComponent implements OnChanges {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  private loadReplies(id: number): void {
+    this.reportsService.getReplies(id).subscribe({
+      next: (items) => this.replies.set(items),
+      error: () => this.replies.set([]),
     });
   }
 }

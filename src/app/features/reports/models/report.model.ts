@@ -17,8 +17,9 @@ export interface Passenger {
 
 export interface Status {
   statusId: number;
-  code?: string;
-  label?: string;
+  code: string;
+  label: string;
+  displayOrder?: number;
 }
 
 export interface Report {
@@ -41,4 +42,19 @@ export interface ReportFilter {
   reportType?: string;
   priority?: string;
   status?: string;
+}
+
+export interface ReportReplyRequest {
+  message: string;
+  userId: number;
+  statusId?: number;
+}
+
+export interface ReportReply {
+  replyId: number;
+  message: string;
+  replyDate: string;
+  emailSent: boolean;
+  reportId: number;
+  userId: number;
 }

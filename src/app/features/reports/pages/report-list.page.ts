@@ -21,6 +21,7 @@ import {
 import { IconDirective } from '@coreui/icons-angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReportDetailModalComponent } from '../components/report-detail-modal.component';
+import { ReportReplyModalComponent } from '../components/report-reply-modal.component';
 import { Report, ReportFilter } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
@@ -47,6 +48,7 @@ import { ReportsService } from '../services/reports.service';
     IconDirective,
     BadgeComponent,
     ReportDetailModalComponent,
+    ReportReplyModalComponent,
   ],
   templateUrl: './report-list.page.html',
 })
@@ -63,7 +65,10 @@ export class ReportListPage implements OnInit {
   readonly size = 10;
 
   readonly detailVisible = signal(false);
+  readonly replyVisible = signal(false);
   readonly currentReportId = signal<number | null>(null);
+  readonly currentReport = signal<Report | null>(null);
+  readonly currentUserId = 1;
 
   readonly filterForm = this.fb.nonNullable.group({
     reference: '',
@@ -122,7 +127,9 @@ export class ReportListPage implements OnInit {
   }
 
   reply(report: Report): void {
-    this.notifications.info(`Reply to report ${report.reference}`);
+    this.currentReport.set(report);
+    this.currentReportId.set(report.reportId);
+    this.replyVisible.set(true);
   }
 
   share(report: Report): void {

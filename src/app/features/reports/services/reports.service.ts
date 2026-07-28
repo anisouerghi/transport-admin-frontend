@@ -3,12 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api.config';
 import { ApiResponse, PageResult } from '../../../shared/models/api-response.model';
-import { Report, ReportFilter } from '../models/report.model';
+import { Report, ReportFilter, ReportReply, ReportReplyRequest, Status } from '../models/report.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = API_CONFIG.admin.signalements;
+  private readonly replyUrl = API_CONFIG.admin.reports;
+  private readonly statusesUrl = API_CONFIG.admin.statuses;
 
   /**
    * Liste paginée + filtres (backend currently returns full list, so filter/pagination client-side).
@@ -35,6 +37,22 @@ export class ReportsService {
 
   getReportById(id: number): Observable<Report> {
     return this.http.get<ApiResponse<Report>>(`${this.baseUrl}/${id}`).pipe(map((r) => r.data));
+  }
+
+  getReplies(reportId: number): Observable<ReportReply[]> {
+    return this.http
+      .get<ApiResponse<ReportReply[]>>(`${this.replyUrl}/${reportId}/replies`)
+      .pipe(map((res) => res.data ?? []));
+  }
+
+  createReply(reportId: number, payload: { message: string; userId: number; statusId?: number }): Observable<ReportReply> {
+    return this.http
+      .post<ApiResponse<ReportReply>>(`${this.replyUrl}/${reportId}/replies`, payload)
+      .pipe(map((r) => r.data));
+  }
+
+  getStatuses(): Observable<Status[]> {
+    return this.http.get<ApiResponse<Status[]>>(this.statusesUrl).pipe(map((res) => res.data ?? []));
   }
 
   private applyFilter(items: Report[], filter: ReportFilter): Report[] {
