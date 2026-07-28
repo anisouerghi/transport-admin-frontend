@@ -27,7 +27,7 @@
             <label cLabel for="reply-status">Status</label>
             <select cSelect id="reply-status" formControlName="statusId" class="form-select">
               <option value="">Keep current</option>
-              @for (s of statuses; track s) {
+              @for (s of statuses(); track s.statusId) {
                 <option [value]="s.statusId">{{ s.label }}</option>
               }
             </select>
