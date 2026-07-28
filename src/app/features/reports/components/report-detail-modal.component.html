@@ -1,0 +1,35 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)">
+  <c-modal-header>
+    <h5 cModalTitle>Report details</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    @if (loading()) {
+      <div class="text-center py-4"><c-spinner></c-spinner></div>
+    } @else if (report()) {
+      <div class="mb-3">
+        <strong>Reference:</strong> {{ report()?.reference }}
+      </div>
+      <div class="mb-2">
+        <strong>Type:</strong> {{ report()?.reportTypeLabel }}
+      </div>
+      <div class="mb-2">
+        <strong>Priority:</strong> {{ report()?.priority }}
+      </div>
+      <div class="mb-2">
+        <strong>Created:</strong> {{ report()?.creationDate | date:'short' }}</div>
+      <div class="mb-2">
+        <strong>Status:</strong> {{ report()?.status?.label }}</div>
+      <hr />
+      <div>
+        <strong>Description</strong>
+        <p class="mt-2">{{ report()?.description }}</p>
+      </div>
+    } @else {
+      <div class="text-center text-body-secondary py-4">No report selected.</div>
+    }
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Close</button>
+  </c-modal-footer>
+</c-modal>

@@ -25,4 +25,9 @@ export const navItems: INavData[] = [
     url: '/transport-supports',
     iconComponent: { name: 'cilList' },
   },
+  {
+    name: 'Reports',
+    url: '/reports',
+    iconComponent: { name: 'cilList' },
+  }
 ];

@@ -7,5 +7,6 @@ export const API_CONFIG = {
     users: `${Config.API_LINK}/api/admin/users`,
     supportTypes: `${Config.API_LINK}/api/admin/support-types`,
     transportSupports: `${Config.API_LINK}/api/admin/transport-supports`,
+    signalements: `${Config.API_LINK}/api/admin/signalements`,
   },
 } as const;

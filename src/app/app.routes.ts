@@ -32,6 +32,10 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/transport-supports/transport-supports.module').then((m) => m.TransportSupportsModule),
       },
+      {
+        path: 'reports',
+        loadChildren: () => import('./features/reports/reports.module').then((m) => m.ReportsModule),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

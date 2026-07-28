@@ -1,0 +1,44 @@
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | string;
+
+export interface TransportSupport {
+  transportSupportId: number;
+  uuid?: string;
+  reference?: string;
+  label?: string;
+}
+
+export interface Passenger {
+  passengerId: number;
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  emailVerified?: boolean;
+}
+
+export interface Status {
+  statusId: number;
+  code?: string;
+  label?: string;
+}
+
+export interface Report {
+  reportId: number;
+  uuid?: string;
+  reference?: string;
+  creationDate?: string;
+  description?: string;
+  priority?: Priority;
+  closureDate?: string;
+  transportSupport?: TransportSupport | null;
+  reportTypeCode?: string;
+  reportTypeLabel?: string;
+  passenger?: Passenger | null;
+  status?: Status | null;
+}
+
+export interface ReportFilter {
+  reference?: string;
+  reportType?: string;
+  priority?: string;
+  status?: string;
+}
