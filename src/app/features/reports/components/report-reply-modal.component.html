@@ -8,7 +8,7 @@
       <div class="text-center py-4 text-body-secondary">No report selected.</div>
     } @else {
       <div class="mb-3">
-        <strong>Reference:</strong> {{ report?.reference }}
+        <strong>Reference:</strong> {{ report.reference }}
       </div>
       <form cForm [formGroup]="form" (ngSubmit)="submit()">
         <c-row class="g-3">
@@ -31,6 +31,18 @@
                 <option [value]="s.statusId">{{ s.label }}</option>
               }
             </select>
+          </c-col>
+          <c-col xs="12">
+            <div class="form-check">
+              <input cFormControl type="checkbox" id="reply-send-email" formControlName="sendEmail" class="form-check-input" />
+              <label class="form-check-label" for="reply-send-email">Envoyer email</label>
+            </div>
+          </c-col>
+          <c-col xs="12">
+            <div class="form-check">
+              <input cFormControl type="checkbox" id="reply-publish" formControlName="publish" class="form-check-input" />
+              <label class="form-check-label" for="reply-publish">Publier</label>
+            </div>
           </c-col>
         </c-row>
       </form>

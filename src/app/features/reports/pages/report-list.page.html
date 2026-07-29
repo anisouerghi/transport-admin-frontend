@@ -9,9 +9,9 @@
           <label cLabel for="filter-reference">Reference</label>
           <input cFormControl id="filter-reference" formControlName="reference" placeholder="Search…" />
         </c-col>
-        <c-col md="3">
-          <label cLabel for="filter-type">Type</label>
-          <input cFormControl id="filter-type" formControlName="reportType" placeholder="Search…" />
+        <c-col md="2">
+          <label cLabel for="filter-type">Type ID</label>
+          <input cFormControl id="filter-type" formControlName="reportTypeId" placeholder="Type ID…" />
         </c-col>
         <c-col md="2">
           <label cLabel for="filter-priority">Priority</label>
@@ -24,7 +24,12 @@
         </c-col>
         <c-col md="2">
           <label cLabel for="filter-status">Status</label>
-          <input cFormControl id="filter-status" formControlName="status" placeholder="Status…" />
+          <select cSelect id="filter-status" formControlName="statusId" class="form-select">
+            <option value="">All</option>
+            @for (status of statuses(); track status.statusId) {
+              <option [value]="status.statusId">{{ status.label }}</option>
+            }
+          </select>
         </c-col>
         <c-col md="2" class="d-flex gap-2">
           <button cButton color="primary" type="submit">Filter</button>
@@ -71,7 +76,6 @@
                 <td class="text-end text-nowrap">
                   <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openView(r.reportId)">Consulter</button>
                   <button cButton color="primary" variant="outline" size="sm" class="me-1" type="button" (click)="reply(r)">Répondre</button>
-                  <button cButton color="secondary" variant="outline" size="sm" type="button" (click)="share(r)">Partager</button>
                 </td>
               </tr>
             } @empty {
