@@ -58,19 +58,21 @@ export class ReportReplyModalComponent implements OnChanges {
   readonly form = this.fb.nonNullable.group({
     message: ['', [Validators.required, Validators.maxLength(2000)]],
     statusId: '' as string | number,
+    sendEmail: false,
+    publish: false,
   });
 
   ngOnChanges(): void {
     this.submitted.set(false);
     if (!this.visible) {
-      this.form.reset({ message: '', statusId: '' });
+      this.form.reset({ message: '', statusId: '', sendEmail: false, publish: false });
       return;
     }
     if (this.statuses().length === 0) {
       this.loadStatuses();
     }
     const currentStatusId = this.report?.status?.statusId ?? '';
-    this.form.reset({ message: '', statusId: currentStatusId });
+    this.form.reset({ message: '', statusId: currentStatusId, sendEmail: false, publish: false });
   }
 
   close(): void {
@@ -88,6 +90,8 @@ export class ReportReplyModalComponent implements OnChanges {
     const payload: ReportReplyRequest = {
       message: raw.message,
       userId: this.userId,
+      sendEmail: raw.sendEmail,
+      publish: raw.publish,
     };
     const statusId = Number(raw.statusId);
     if (!Number.isNaN(statusId) && statusId > 0) {

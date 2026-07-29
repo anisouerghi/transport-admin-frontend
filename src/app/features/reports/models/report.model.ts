@@ -39,8 +39,17 @@ export interface Report {
 
 export interface ReportFilter {
   reference?: string;
-  reportType?: string;
+  description?: string;
   priority?: string;
+  reportTypeId?: number;
+  statusId?: number;
+  supportUuid?: string;
+  supportReference?: string;
+  creationDateFrom?: string;
+  creationDateTo?: string;
+  closureDateFrom?: string;
+  closureDateTo?: string;
+  reportType?: string;
   status?: string;
 }
 
@@ -48,6 +57,8 @@ export interface ReportReplyRequest {
   message: string;
   userId: number;
   statusId?: number;
+  sendEmail?: boolean;
+  publish?: boolean;
 }
 
 export interface ReportReply {

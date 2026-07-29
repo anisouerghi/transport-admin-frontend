@@ -18,11 +18,10 @@ import {
   SpinnerComponent,
   TableDirective,
 } from '@coreui/angular';
-import { IconDirective } from '@coreui/icons-angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReportDetailModalComponent } from '../components/report-detail-modal.component';
 import { ReportReplyModalComponent } from '../components/report-reply-modal.component';
-import { Report, ReportFilter } from '../models/report.model';
+import { Report, ReportFilter, Status } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
 @Component({
@@ -45,7 +44,6 @@ import { ReportsService } from '../services/reports.service';
     PageItemDirective,
     PageLinkDirective,
     SpinnerComponent,
-    IconDirective,
     BadgeComponent,
     ReportDetailModalComponent,
     ReportReplyModalComponent,
@@ -59,6 +57,7 @@ export class ReportListPage implements OnInit {
 
   readonly loading = signal(false);
   readonly reports = signal<Report[]>([]);
+  readonly statuses = signal<Status[]>([]);
   readonly totalElements = signal(0);
   readonly totalPages = signal(1);
   readonly page = signal(0);
@@ -72,23 +71,26 @@ export class ReportListPage implements OnInit {
 
   readonly filterForm = this.fb.nonNullable.group({
     reference: '',
-    reportType: '',
+    reportTypeId: '' as string | number,
     priority: '',
-    status: '',
+    statusId: '' as string | number,
   });
 
   ngOnInit(): void {
+    this.loadStatuses();
     this.load();
   }
 
   load(): void {
     this.loading.set(true);
     const raw = this.filterForm.getRawValue();
+    const reportTypeId = raw.reportTypeId === '' ? undefined : Number(raw.reportTypeId);
+    const statusId = raw.statusId === '' ? undefined : Number(raw.statusId);
     const filter: ReportFilter = {
       reference: raw.reference,
-      reportType: raw.reportType,
       priority: raw.priority,
-      status: raw.status,
+      reportTypeId: reportTypeId && reportTypeId > 0 ? reportTypeId : undefined,
+      statusId: statusId && statusId > 0 ? statusId : undefined,
     };
     this.reportsService.getReports(this.page(), this.size, filter).subscribe({
       next: (res) => {
@@ -108,9 +110,16 @@ export class ReportListPage implements OnInit {
   }
 
   resetFilters(): void {
-    this.filterForm.reset({ reference: '', reportType: '', priority: '', status: '' });
+    this.filterForm.reset({ reference: '', reportTypeId: '', priority: '', statusId: '' });
     this.page.set(0);
     this.load();
+  }
+
+  private loadStatuses(): void {
+    this.reportsService.getStatuses().subscribe({
+      next: (statuses) => this.statuses.set(statuses),
+      error: () => {},
+    });
   }
 
   goToPage(page: number): void {
@@ -130,10 +139,6 @@ export class ReportListPage implements OnInit {
     this.currentReport.set(report);
     this.currentReportId.set(report.reportId);
     this.replyVisible.set(true);
-  }
-
-  share(report: Report): void {
-    this.notifications.info(`Share report ${report.reference}`);
   }
 
   pages(): number[] {
