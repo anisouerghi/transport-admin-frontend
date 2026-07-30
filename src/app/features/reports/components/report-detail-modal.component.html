@@ -38,6 +38,8 @@
                 </div>
                 <p class="mb-2">{{ reply.message }}</p>
                 <div class="text-body-secondary">Email sent: {{ reply.emailSent ? 'Yes' : 'No' }}</div>
+                <div class="text-body-secondary">Visible à l'accueil: {{ reply.publish ? 'Yes' : 'No' }}</div>
+                <div class="text-body-secondary">Visible à l'auteur de signalement: {{ reply.publicResponse ? 'Yes' : 'No' }}</div>
               </div>
             }
           </div>
