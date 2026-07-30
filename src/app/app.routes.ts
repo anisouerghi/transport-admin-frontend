@@ -36,6 +36,11 @@ export const routes: Routes = [
         data: { title: 'Report types' },
       },
       {
+        path: 'statuses',
+        loadChildren: () =>
+          import('./features/statuses/statuses.module').then((m) => m.StatusesModule),
+      },
+      {
         path: 'transport-supports',
         loadChildren: () =>
           import('./features/transport-supports/transport-supports.module').then((m) => m.TransportSupportsModule),

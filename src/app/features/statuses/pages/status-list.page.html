@@ -1,0 +1,129 @@
+<c-card class="mb-4">
+  <c-card-header class="d-flex justify-content-between align-items-center">
+    <strong>Statuses</strong>
+    <button cButton color="primary" type="button" (click)="openCreate()">
+      <svg cIcon name="cilPlus" class="me-1"></svg>
+      Add status
+    </button>
+  </c-card-header>
+  <c-card-body>
+    <form cForm [formGroup]="filterForm" (ngSubmit)="search()" class="mb-4">
+      <c-row class="g-3 align-items-end">
+        <c-col md="4">
+          <label cLabel for="filter-code">Code</label>
+          <input cFormControl id="filter-code" formControlName="code" placeholder="Search…" />
+        </c-col>
+        <c-col md="4">
+          <label cLabel for="filter-label">Label</label>
+          <input cFormControl id="filter-label" formControlName="label" placeholder="Search…" />
+        </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-display-order">Display order</label>
+          <input cFormControl id="filter-display-order" type="number" formControlName="displayOrder" />
+        </c-col>
+        <c-col md="2" class="d-flex gap-2">
+          <button cButton color="primary" type="submit">Filter</button>
+          <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">
+            Reset
+          </button>
+        </c-col>
+      </c-row>
+    </form>
+
+    @if (loading()) {
+      <div class="text-center py-5">
+        <c-spinner></c-spinner>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table cTable hover striped align="middle" class="mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Code</th>
+              <th>Label</th>
+              <th>Display order</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item.statusId) {
+              <tr>
+                <td>{{ item.statusId }}</td>
+                <td>{{ item.code }}</td>
+                <td>{{ item.label }}</td>
+                <td>{{ item.displayOrder }}</td>
+                <td class="text-end text-nowrap">
+                  <button
+                    cButton
+                    color="info"
+                    variant="outline"
+                    size="sm"
+                    class="me-1"
+                    type="button"
+                    (click)="openEdit(item)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    cButton
+                    color="danger"
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    (click)="askDelete(item)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center text-body-secondary py-4">
+                  No statuses found.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+        <small class="text-body-secondary">
+          {{ totalElements() }} result(s) — page {{ page() + 1 }} / {{ totalPages() }}
+        </small>
+        <c-pagination>
+          <li cPageItem [disabled]="page() === 0">
+            <a cPageLink role="button" (click)="goToPage(page() - 1)">Previous</a>
+          </li>
+          @for (p of pages(); track p) {
+            <li cPageItem [active]="p === page()">
+              <a cPageLink role="button" (click)="goToPage(p)">{{ p + 1 }}</a>
+            </li>
+          }
+          <li cPageItem [disabled]="page() >= totalPages() - 1">
+            <a cPageLink role="button" (click)="goToPage(page() + 1)">Next</a>
+          </li>
+        </c-pagination>
+      </div>
+    }
+  </c-card-body>
+</c-card>
+
+<app-status-form-modal
+  [visible]="formModalVisible()"
+  [item]="editingItem()"
+  (visibleChange)="formModalVisible.set($event)"
+  (saved)="load()"
+/>
+
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  title="Delete status"
+  message="Do you want to permanently delete this status?"
+  confirmLabel="Delete"
+  confirmColor="danger"
+  [busy]="actionBusy()"
+  (visibleChange)="confirmVisible.set($event)"
+  (confirm)="onConfirm()"
+/>
