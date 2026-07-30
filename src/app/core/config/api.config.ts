@@ -10,6 +10,6 @@ export const API_CONFIG = {
     transportSupports: `${Config.API_LINK}/api/admin/transport-supports`,
     signalements: `${Config.API_LINK}/api/admin/signalements`,
     reports: `${Config.API_LINK}/api/admin/reports`,
-    statuses: `${Config.API_LINK}/api/admin/statuses`,
+    statuses: `${Config.API_LINK}/api/admin/status`,
   },
 } as const;
