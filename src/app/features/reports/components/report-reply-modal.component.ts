@@ -60,19 +60,20 @@ export class ReportReplyModalComponent implements OnChanges {
     statusId: '' as string | number,
     sendEmail: false,
     publish: false,
+    publicResponse: false,
   });
 
   ngOnChanges(): void {
     this.submitted.set(false);
     if (!this.visible) {
-      this.form.reset({ message: '', statusId: '', sendEmail: false, publish: false });
+      this.form.reset({ message: '', statusId: '', sendEmail: false, publish: false, publicResponse: false });
       return;
     }
     if (this.statuses().length === 0) {
       this.loadStatuses();
     }
     const currentStatusId = this.report?.status?.statusId ?? '';
-    this.form.reset({ message: '', statusId: currentStatusId, sendEmail: false, publish: false });
+    this.form.reset({ message: '', statusId: currentStatusId, sendEmail: false, publish: false, publicResponse: false });
   }
 
   close(): void {
@@ -92,6 +93,7 @@ export class ReportReplyModalComponent implements OnChanges {
       userId: this.userId,
       sendEmail: raw.sendEmail,
       publish: raw.publish,
+      publicResponse: raw.publicResponse,
     };
     const statusId = Number(raw.statusId);
     if (!Number.isNaN(statusId) && statusId > 0) {

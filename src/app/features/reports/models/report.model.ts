@@ -59,13 +59,16 @@ export interface ReportReplyRequest {
   statusId?: number;
   sendEmail?: boolean;
   publish?: boolean;
+  publicResponse?: boolean;
 }
 
 export interface ReportReply {
   replyId: number;
   message: string;
   replyDate: string;
-  emailSent: boolean;
+  emailSent?: boolean;
+  publish?: boolean;
+  publicResponse?: boolean;
   reportId: number;
   userId: number;
 }

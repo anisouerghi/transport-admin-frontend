@@ -47,7 +47,7 @@ export class ReportsService {
       .pipe(map((res) => res.data ?? []));
   }
 
-  createReply(reportId: number, payload: { message: string; userId: number; statusId?: number }): Observable<ReportReply> {
+  createReply(reportId: number, payload: ReportReplyRequest): Observable<ReportReply> {
     return this.http
       .post<ApiResponse<ReportReply>>(`${this.replyUrl}/${reportId}/replies`, payload)
       .pipe(map((r) => r.data));
