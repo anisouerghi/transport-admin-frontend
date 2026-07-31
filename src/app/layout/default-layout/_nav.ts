@@ -34,5 +34,10 @@ export const navItems: INavData[] = [
     name: 'Reports',
     url: '/reports',
     iconComponent: { name: 'cilList' },
-  }
+  },
+  {
+    name: "Journal d'audit",
+    url: '/audit-logs',
+    iconComponent: { name: 'cilHistory' },
+  },
 ];

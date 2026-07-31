@@ -1,0 +1,84 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Détail du journal d'audit</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    @if (loading()) {
+      <div class="text-center py-4"><c-spinner></c-spinner></div>
+    } @else if (item(); as log) {
+      <div class="row g-3">
+        <div class="col-md-6">
+          <strong>ID</strong>
+          <div>{{ log.auditLogId }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>Date / heure</strong>
+          <div>{{ log.actionDate | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>Utilisateur</strong>
+          <div>{{ log.userFullName || log.username || '—' }}</div>
+          @if (log.username && log.userFullName) {
+            <small class="text-body-secondary">{{ log.username }}</small>
+          }
+        </div>
+        <div class="col-md-6">
+          <strong>Adresse IP</strong>
+          <div>{{ log.ipAddress || '—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <strong>Type d'action</strong>
+          <div><c-badge color="info">{{ log.actionType }}</c-badge></div>
+        </div>
+        <div class="col-md-4">
+          <strong>Module</strong>
+          <div>{{ log.module }}</div>
+        </div>
+        <div class="col-md-4">
+          <strong>Résultat</strong>
+          <div>
+            <c-badge [color]="log.result === 'SUCCESS' ? 'success' : 'danger'">{{ log.result }}</c-badge>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <strong>Entité</strong>
+          <div>{{ log.entityName || '—' }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>Identifiant entité</strong>
+          <div>{{ log.entityId || '—' }}</div>
+        </div>
+        <div class="col-12">
+          <strong>Description</strong>
+          <p class="mt-1 mb-0">{{ log.description || '—' }}</p>
+        </div>
+        <div class="col-md-6">
+          <strong>Ancienne valeur</strong>
+          <pre class="mt-1 p-2 bg-body-tertiary border rounded small mb-0" style="white-space: pre-wrap; word-break: break-word;">{{ log.oldValue || '—' }}</pre>
+        </div>
+        <div class="col-md-6">
+          <strong>Nouvelle valeur</strong>
+          <pre class="mt-1 p-2 bg-body-tertiary border rounded small mb-0" style="white-space: pre-wrap; word-break: break-word;">{{ log.newValue || '—' }}</pre>
+        </div>
+        <div class="col-md-4">
+          <strong>Navigateur</strong>
+          <div>{{ log.browser || '—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <strong>Système</strong>
+          <div>{{ log.operatingSystem || '—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <strong>User-Agent</strong>
+          <div class="small text-break">{{ log.userAgent || '—' }}</div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center text-body-secondary py-4">Aucune entrée sélectionnée.</div>
+    }
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Fermer</button>
+  </c-modal-footer>
+</c-modal>

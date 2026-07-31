@@ -44,6 +44,11 @@ export const routes: Routes = [
         path: 'reports',
         loadChildren: () => import('./features/reports/reports.module').then((m) => m.ReportsModule),
       },
+      {
+        path: 'audit-logs',
+        loadChildren: () =>
+          import('./features/audit-logs/audit-logs.module').then((m) => m.AuditLogsModule),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },
