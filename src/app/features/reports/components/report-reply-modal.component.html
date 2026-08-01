@@ -1,14 +1,14 @@
 <c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)">
   <c-modal-header>
-    <h5 cModalTitle>Reply to report</h5>
+    <h5 cModalTitle>Traiter le signalement</h5>
     <button cButtonClose (click)="close()"></button>
   </c-modal-header>
   <c-modal-body>
     @if (!report) {
-      <div class="text-center py-4 text-body-secondary">No report selected.</div>
+      <div class="text-center py-4 text-body-secondary">Aucun signalement sélectionné.</div>
     } @else {
       <div class="mb-3">
-        <strong>Reference:</strong> {{ report.reference }}
+        <strong>Référence :</strong> {{ report.reference }}
       </div>
       <form cForm [formGroup]="form" (ngSubmit)="submit()">
         <c-row class="g-3">
@@ -20,17 +20,30 @@
               formControlName="message"
               rows="5"
               class="form-control"
-              placeholder="Write your reply..."
+              placeholder="Rédigez votre réponse…"
             ></textarea>
           </c-col>
           <c-col xs="12">
-            <label cLabel for="reply-status">Status</label>
+            <label cLabel for="reply-status">Statut</label>
             <select cSelect id="reply-status" formControlName="statusId" class="form-select">
-              <option value="">Keep current</option>
+              <option value="">Conserver le statut actuel</option>
               @for (s of statuses(); track s.statusId) {
                 <option [value]="s.statusId">{{ s.label }}</option>
               }
             </select>
+          </c-col>
+          <c-col xs="12">
+            @if (canUpdatePriority()) {
+              <label cLabel for="reply-priority">Priorité (interne)</label>
+              <select cSelect id="reply-priority" formControlName="priority" class="form-select">
+                @for (p of priorities; track p.value) {
+                  <option [value]="p.value">{{ p.label }}</option>
+                }
+              </select>
+            } @else {
+              <label cLabel>Priorité (interne)</label>
+              <div class="form-control-plaintext">{{ report.priority || '—' }}</div>
+            }
           </c-col>
           <c-col xs="12">
             <div class="form-check">
@@ -46,7 +59,13 @@
           </c-col>
           <c-col xs="12">
             <div class="form-check">
-              <input cFormControl type="checkbox" id="reply-public-response" formControlName="publicResponse" class="form-check-input" />
+              <input
+                cFormControl
+                type="checkbox"
+                id="reply-public-response"
+                formControlName="publicResponse"
+                class="form-check-input"
+              />
               <label class="form-check-label" for="reply-public-response">Visible à l'auteur de signalement</label>
             </div>
           </c-col>
@@ -55,9 +74,9 @@
     }
   </c-modal-body>
   <c-modal-footer>
-    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Cancel</button>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Annuler</button>
     <button cButton color="primary" type="button" (click)="submit()" [disabled]="saving()">
-      Save reply
+      Enregistrer
     </button>
   </c-modal-footer>
 </c-modal>

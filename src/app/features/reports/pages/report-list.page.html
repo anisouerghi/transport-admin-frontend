@@ -17,9 +17,10 @@
           <label cLabel for="filter-priority">Priority</label>
           <select cSelect id="filter-priority" formControlName="priority" class="form-select">
             <option value="">All</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
+            <option value="LOW">Faible</option>
+            <option value="MEDIUM">Normale</option>
+            <option value="HIGH">Élevée</option>
+            <option value="CRITICAL">Critique</option>
           </select>
         </c-col>
         <c-col md="2">
@@ -66,8 +67,8 @@
                 <td>{{ r.reference }}</td>
                 <td>{{ r.reportTypeLabel }}</td>
                 <td>
-                  <c-badge [color]="r.priority === 'HIGH' ? 'danger' : r.priority === 'MEDIUM' ? 'warning' : 'secondary'">
-                    {{ r.priority }}
+                  <c-badge [color]="priorityBadge(r.priority)">
+                    {{ priorityLabel(r.priority) }}
                   </c-badge>
                 </td>
                 <td>{{ r.transportSupport?.label }}</td>
@@ -112,7 +113,12 @@
   </c-card-body>
 </c-card>
 
-<app-report-detail-modal [visible]="detailVisible()" [reportId]="currentReportId()" (visibleChange)="detailVisible.set($event)"></app-report-detail-modal>
+<app-report-detail-modal
+  [visible]="detailVisible()"
+  [reportId]="currentReportId()"
+  (visibleChange)="detailVisible.set($event)"
+  (updated)="load()"
+></app-report-detail-modal>
 <app-report-reply-modal
   [visible]="replyVisible()"
   [report]="currentReport()"

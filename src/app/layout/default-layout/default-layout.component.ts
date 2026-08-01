@@ -12,6 +12,7 @@ import { environment } from '../../../environments/environment';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { ToastContainerComponent } from '../../shared/components/toast-container.component';
 import { AuthService } from '../../core/services/auth.service';
+import { MenuItem } from '../../core/models/auth.model';
 import { INavData } from '@coreui/angular';
 
 import {
@@ -27,6 +28,24 @@ import {
 } from '@coreui/angular';
 
 import { DefaultFooterComponent, DefaultHeaderComponent } from './';
+
+/** Entrées de menu à garantir côté UI si absentes de la session (ex. seed récent). */
+const ENSURED_MENUS: MenuItem[] = [
+  {
+    code: 'PASSENGERS',
+    label: 'Voyageurs',
+    url: '/passengers',
+    icon: 'cilPeople',
+    permission: 'PASSENGER_VIEW',
+  },
+  {
+    code: 'STATISTICS',
+    label: 'Rapports & Statistiques',
+    url: '/statistics',
+    icon: 'cilChart',
+    permission: 'REPORT_STATISTICS_VIEW',
+  },
+];
 
 @Component({
   selector: 'app-dashboard',
@@ -60,9 +79,9 @@ export class DefaultLayoutComponent implements OnInit {
   readonly loadingLabel = 'Chargement…';
   readonly routeLoading = signal(false);
 
-  /** Menu dynamique construit depuis les menus renvoyés au login. */
+  /** Menu dynamique + complétion des entrées manquantes (Voyageurs, Statistiques). */
   readonly navItems = computed<INavData[]>(() => {
-    const menus = this.auth.menus();
+    const menus = this.mergeMenus(this.auth.menus(), this.auth.permissions());
     if (!menus.length) {
       return [{ name: 'Dashboard', url: '/dashboard', iconComponent: { name: 'cilSpeedometer' } }];
     }
@@ -77,6 +96,10 @@ export class DefaultLayoutComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    if (this.auth.isAuthenticated()) {
+      this.auth.refreshProfile().subscribe({ error: () => undefined });
+    }
+
     this.router.events.subscribe((e) => {
       if (e instanceof NavigationStart) {
         this.routeLoading.set(true);
@@ -89,5 +112,18 @@ export class DefaultLayoutComponent implements OnInit {
         this.routeLoading.set(false);
       }
     });
+  }
+
+  private mergeMenus(menus: MenuItem[], permissions: string[]): MenuItem[] {
+    const byUrl = new Map(menus.map((m) => [m.url, m]));
+    for (const entry of ENSURED_MENUS) {
+      if (!entry.permission || !permissions.includes(entry.permission)) {
+        continue;
+      }
+      if (!byUrl.has(entry.url)) {
+        byUrl.set(entry.url, entry);
+      }
+    }
+    return Array.from(byUrl.values());
   }
 }

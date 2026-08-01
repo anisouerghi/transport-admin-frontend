@@ -15,8 +15,9 @@ import {
   ModalTitleDirective,
   RowComponent,
 } from '@coreui/angular';
+import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { ReportReplyRequest, Report, Status } from '../models/report.model';
+import { PRIORITY_OPTIONS, Priority, ReportReplyRequest, Report, Status } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
 @Component({
@@ -43,6 +44,7 @@ import { ReportsService } from '../services/reports.service';
 export class ReportReplyModalComponent implements OnChanges {
   private readonly reportsService = inject(ReportsService);
   private readonly notifications = inject(NotificationService);
+  private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
   @Input() visible = false;
@@ -53,10 +55,13 @@ export class ReportReplyModalComponent implements OnChanges {
   readonly saving = signal(false);
   readonly submitted = signal(false);
   readonly statuses = signal<Status[]>([]);
+  readonly priorities = PRIORITY_OPTIONS;
+  readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
 
   readonly form = this.fb.nonNullable.group({
     message: ['', [Validators.required, Validators.maxLength(2000)]],
     statusId: '' as string | number,
+    priority: '' as Priority | '',
     sendEmail: false,
     publish: false,
     publicResponse: false,
@@ -65,14 +70,28 @@ export class ReportReplyModalComponent implements OnChanges {
   ngOnChanges(): void {
     this.submitted.set(false);
     if (!this.visible) {
-      this.form.reset({ message: '', statusId: '', sendEmail: false, publish: false, publicResponse: false });
+      this.form.reset({
+        message: '',
+        statusId: '',
+        priority: '',
+        sendEmail: false,
+        publish: false,
+        publicResponse: false,
+      });
       return;
     }
     if (this.statuses().length === 0) {
       this.loadStatuses();
     }
     const currentStatusId = this.report?.status?.statusId ?? '';
-    this.form.reset({ message: '', statusId: currentStatusId, sendEmail: false, publish: false, publicResponse: false });
+    this.form.reset({
+      message: '',
+      statusId: currentStatusId,
+      priority: (this.report?.priority as Priority) || '',
+      sendEmail: false,
+      publish: false,
+      publicResponse: false,
+    });
   }
 
   close(): void {
@@ -99,16 +118,34 @@ export class ReportReplyModalComponent implements OnChanges {
     }
 
     this.saving.set(true);
-    this.reportsService.createReply(this.report.reportId, payload).subscribe({
-      next: () => {
-        this.notifications.success('Reply created');
+    const reportId = this.report.reportId;
+    const priorityChanged =
+      this.canUpdatePriority() &&
+      !!raw.priority &&
+      raw.priority !== this.report.priority;
+
+    const afterReply = () => {
+      if (!priorityChanged) {
+        this.notifications.success('Réponse enregistrée');
         this.saving.set(false);
         this.replied.emit();
         this.close();
-      },
-      error: () => {
-        this.saving.set(false);
-      },
+        return;
+      }
+      this.reportsService.updatePriority(reportId, raw.priority).subscribe({
+        next: () => {
+          this.notifications.success('Réponse et priorité enregistrées');
+          this.saving.set(false);
+          this.replied.emit();
+          this.close();
+        },
+        error: () => this.saving.set(false),
+      });
+    };
+
+    this.reportsService.createReply(reportId, payload).subscribe({
+      next: () => afterReply(),
+      error: () => this.saving.set(false),
     });
   }
 

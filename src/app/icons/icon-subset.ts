@@ -1,11 +1,13 @@
 import {
   cilAccountLogout,
+  cilChart,
   cilContrast,
   cilHistory,
   cilList,
   cilLockLocked,
   cilMenu,
   cilMoon,
+  cilPeople,
   cilPlus,
   cilReload,
   cilSpeech,
@@ -17,12 +19,14 @@ import {
 /** Icônes utilisées par le Back-Office admin. */
 export const iconSubset = {
   cilAccountLogout,
+  cilChart,
   cilContrast,
   cilHistory,
   cilList,
   cilLockLocked,
   cilMenu,
   cilMoon,
+  cilPeople,
   cilPlus,
   cilReload,
   cilSpeech,

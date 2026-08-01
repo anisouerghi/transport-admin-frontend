@@ -56,4 +56,10 @@ export class ReportsService {
   getStatuses(): Observable<Status[]> {
     return this.http.get<ApiResponse<Status[]>>(this.statusesUrl).pipe(map((res) => res.data ?? []));
   }
+
+  updatePriority(reportId: number, priority: string): Observable<Report> {
+    return this.http
+      .patch<ApiResponse<Report>>(`${this.baseUrl}/${reportId}/priority`, { priority })
+      .pipe(map((r) => r.data));
+  }
 }

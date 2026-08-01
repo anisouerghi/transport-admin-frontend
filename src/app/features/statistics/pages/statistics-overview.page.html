@@ -1,0 +1,73 @@
+<c-card class="mb-4">
+  <c-card-header class="d-flex justify-content-between align-items-center">
+    <strong>Rapports &amp; Statistiques</strong>
+    <button cButton color="secondary" variant="outline" type="button" (click)="load()" [disabled]="loading()">
+      Actualiser
+    </button>
+  </c-card-header>
+  <c-card-body>
+    <p class="text-body-secondary mb-4">
+      Vue d'ensemble des indicateurs. Cette page accueillera progressivement les tableaux de bord et
+      statistiques détaillées.
+    </p>
+
+    @if (loading()) {
+      <div class="text-center py-5">
+        <c-spinner></c-spinner>
+      </div>
+    } @else if (overview(); as data) {
+      <c-row class="g-3">
+        <c-col sm="6" lg="4" xl="2">
+          <c-card>
+            <c-card-body>
+              <div class="text-body-secondary small">Signalements</div>
+              <div class="fs-4 fw-semibold">{{ data.totalReports }}</div>
+            </c-card-body>
+          </c-card>
+        </c-col>
+        <c-col sm="6" lg="4" xl="2">
+          <c-card>
+            <c-card-body>
+              <div class="text-body-secondary small">Supports</div>
+              <div class="fs-4 fw-semibold">{{ data.totalSupports }}</div>
+            </c-card-body>
+          </c-card>
+        </c-col>
+        <c-col sm="6" lg="4" xl="2">
+          <c-card>
+            <c-card-body>
+              <div class="text-body-secondary small">Utilisateurs</div>
+              <div class="fs-4 fw-semibold">{{ data.totalUsers }}</div>
+            </c-card-body>
+          </c-card>
+        </c-col>
+        <c-col sm="6" lg="4" xl="2">
+          <c-card>
+            <c-card-body>
+              <div class="text-body-secondary small">Voyageurs</div>
+              <div class="fs-4 fw-semibold">{{ data.totalPassengers }}</div>
+            </c-card-body>
+          </c-card>
+        </c-col>
+        <c-col sm="6" lg="4" xl="2">
+          <c-card>
+            <c-card-body>
+              <div class="text-body-secondary small">Voyageurs actifs</div>
+              <div class="fs-4 fw-semibold text-success">{{ data.activePassengers }}</div>
+            </c-card-body>
+          </c-card>
+        </c-col>
+        <c-col sm="6" lg="4" xl="2">
+          <c-card>
+            <c-card-body>
+              <div class="text-body-secondary small">Voyageurs désactivés</div>
+              <div class="fs-4 fw-semibold text-secondary">{{ data.inactivePassengers }}</div>
+            </c-card-body>
+          </c-card>
+        </c-col>
+      </c-row>
+    } @else {
+      <p class="text-body-secondary mb-0">Impossible de charger les statistiques.</p>
+    }
+  </c-card-body>
+</c-card>

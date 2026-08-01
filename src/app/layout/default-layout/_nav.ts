@@ -36,6 +36,16 @@ export const navItems: INavData[] = [
     iconComponent: { name: 'cilList' },
   },
   {
+    name: 'Voyageurs',
+    url: '/passengers',
+    iconComponent: { name: 'cilPeople' },
+  },
+  {
+    name: 'Rapports & Statistiques',
+    url: '/statistics',
+    iconComponent: { name: 'cilChart' },
+  },
+  {
     name: "Journal d'audit",
     url: '/audit-logs',
     iconComponent: { name: 'cilHistory' },

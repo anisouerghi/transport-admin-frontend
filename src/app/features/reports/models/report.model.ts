@@ -1,4 +1,11 @@
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | string;
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
+  { value: 'LOW', label: 'Faible' },
+  { value: 'MEDIUM', label: 'Normale' },
+  { value: 'HIGH', label: 'Élevée' },
+  { value: 'CRITICAL', label: 'Critique' },
+];
 
 export interface TransportSupport {
   transportSupportId: number;
@@ -72,4 +79,8 @@ export interface ReportReply {
   publicResponse?: boolean;
   reportId: number;
   userId: number;
+}
+
+export interface UpdatePriorityRequest {
+  priority: Priority;
 }

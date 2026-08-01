@@ -1,0 +1,51 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>Détail du voyageur</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    @if (loading()) {
+      <div class="text-center py-4"><c-spinner></c-spinner></div>
+    } @else if (item(); as passenger) {
+      <div class="row g-3">
+        <div class="col-md-6">
+          <strong>ID</strong>
+          <div>{{ passenger.passengerId }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>État</strong>
+          <div>
+            <c-badge [color]="passenger.active ? 'success' : 'secondary'">
+              {{ passenger.active ? 'Actif' : 'Désactivé' }}
+            </c-badge>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <strong>Nom</strong>
+          <div>{{ passenger.name || '—' }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>Email</strong>
+          <div>{{ passenger.email || '—' }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>Téléphone</strong>
+          <div>{{ passenger.phoneNumber || '—' }}</div>
+        </div>
+        <div class="col-md-6">
+          <strong>Email vérifié</strong>
+          <div>
+            <c-badge [color]="passenger.emailVerified ? 'success' : 'secondary'">
+              {{ passenger.emailVerified ? 'Oui' : 'Non' }}
+            </c-badge>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="text-center text-body-secondary py-4">Aucun voyageur sélectionné.</div>
+    }
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Fermer</button>
+  </c-modal-footer>
+</c-modal>

@@ -142,6 +142,31 @@ export class ReportListPage implements OnInit {
     this.replyVisible.set(true);
   }
 
+  priorityLabel(code?: string | null): string {
+    switch (code) {
+      case 'LOW':
+        return 'Faible';
+      case 'MEDIUM':
+        return 'Normale';
+      case 'HIGH':
+        return 'Élevée';
+      case 'CRITICAL':
+        return 'Critique';
+      default:
+        return code || '—';
+    }
+  }
+
+  priorityBadge(code?: string | null): string {
+    if (code === 'CRITICAL' || code === 'HIGH') {
+      return 'danger';
+    }
+    if (code === 'MEDIUM') {
+      return 'warning';
+    }
+    return 'secondary';
+  }
+
   pages(): number[] {
     return Array.from({ length: this.totalPages() }, (_, i) => i);
   }

@@ -42,6 +42,7 @@ export type AuditAction =
   | 'SEARCH'
   | 'REPLY'
   | 'STATUS_CHANGE'
+  | 'PRIORITY_CHANGE'
   | 'UPLOAD'
   | 'OTHER';
 
@@ -55,6 +56,8 @@ export type AuditModule =
   | 'REPLIES'
   | 'ATTACHMENTS'
   | 'STATUSES'
+  | 'PASSENGERS'
+  | 'STATISTICS'
   | 'AUTH'
   | 'SYSTEM'
   | 'OTHER';
@@ -72,6 +75,7 @@ export const AUDIT_ACTIONS: AuditAction[] = [
   'SEARCH',
   'REPLY',
   'STATUS_CHANGE',
+  'PRIORITY_CHANGE',
   'UPLOAD',
   'OTHER',
 ];
@@ -86,6 +90,8 @@ export const AUDIT_MODULES: AuditModule[] = [
   'REPLIES',
   'ATTACHMENTS',
   'STATUSES',
+  'PASSENGERS',
+  'STATISTICS',
   'AUTH',
   'SYSTEM',
   'OTHER',

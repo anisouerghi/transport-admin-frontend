@@ -15,5 +15,7 @@ export const API_CONFIG = {
     reports: `${Config.API_LINK}/api/admin/reports`,
     statuses: `${Config.API_LINK}/api/admin/status`,
     auditLogs: `${Config.API_LINK}/api/admin/audit-logs`,
+    passengers: `${Config.API_LINK}/api/admin/passengers`,
+    statistics: `${Config.API_LINK}/api/admin/statistics`,
   },
 } as const;

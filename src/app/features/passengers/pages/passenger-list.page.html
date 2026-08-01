@@ -1,0 +1,160 @@
+<c-card class="mb-4">
+  <c-card-header>
+    <strong>Voyageurs</strong>
+  </c-card-header>
+  <c-card-body>
+    <form cForm [formGroup]="filterForm" (ngSubmit)="search()" class="mb-4">
+      <c-row class="g-3 align-items-end">
+        <c-col md="3">
+          <label cLabel for="filter-name">Nom</label>
+          <input cFormControl id="filter-name" formControlName="name" placeholder="Rechercher…" />
+        </c-col>
+        <c-col md="3">
+          <label cLabel for="filter-email">Email</label>
+          <input cFormControl id="filter-email" formControlName="email" placeholder="Rechercher…" />
+        </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-phone">Téléphone</label>
+          <input cFormControl id="filter-phone" formControlName="phoneNumber" placeholder="Rechercher…" />
+        </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-active">État</label>
+          <select cSelect id="filter-active" formControlName="active" class="form-select">
+            <option value="">Tous</option>
+            <option value="true">Actifs</option>
+            <option value="false">Désactivés</option>
+          </select>
+        </c-col>
+        <c-col md="2" class="d-flex gap-2">
+          <button cButton color="primary" type="submit">Filtrer</button>
+          <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">
+            Réinitialiser
+          </button>
+        </c-col>
+      </c-row>
+    </form>
+
+    @if (loading()) {
+      <div class="text-center py-5">
+        <c-spinner></c-spinner>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table cTable hover striped align="middle" class="mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Email vérifié</th>
+              <th>État</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (passenger of passengers(); track passenger.passengerId) {
+              <tr>
+                <td>{{ passenger.passengerId }}</td>
+                <td>{{ passenger.name || '—' }}</td>
+                <td>{{ passenger.email || '—' }}</td>
+                <td>{{ passenger.phoneNumber || '—' }}</td>
+                <td>
+                  <c-badge [color]="passenger.emailVerified ? 'success' : 'secondary'">
+                    {{ passenger.emailVerified ? 'Oui' : 'Non' }}
+                  </c-badge>
+                </td>
+                <td>
+                  <c-badge [color]="passenger.active ? 'success' : 'secondary'">
+                    {{ passenger.active ? 'Actif' : 'Désactivé' }}
+                  </c-badge>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button
+                    *appHasPermission="'PASSENGER_VIEW'"
+                    cButton
+                    color="info"
+                    variant="outline"
+                    size="sm"
+                    class="me-1"
+                    type="button"
+                    (click)="openView(passenger)"
+                  >
+                    Voir
+                  </button>
+                  @if (passenger.active) {
+                    <button
+                      *appHasPermission="'PASSENGER_DEACTIVATE'"
+                      cButton
+                      color="warning"
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      (click)="askDeactivate(passenger)"
+                    >
+                      Désactiver
+                    </button>
+                  } @else {
+                    <button
+                      *appHasPermission="'PASSENGER_ACTIVATE'"
+                      cButton
+                      color="success"
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      (click)="askActivate(passenger)"
+                    >
+                      Activer
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center text-body-secondary py-4">
+                  Aucun voyageur trouvé.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+        <small class="text-body-secondary">
+          {{ totalElements() }} résultat(s) — page {{ page() + 1 }} / {{ totalPages() }}
+        </small>
+        <c-pagination>
+          <li cPageItem [disabled]="page() === 0">
+            <a cPageLink role="button" (click)="goToPage(page() - 1)">Précédent</a>
+          </li>
+          @for (p of pages(); track p) {
+            <li cPageItem [active]="p === page()">
+              <a cPageLink role="button" (click)="goToPage(p)">{{ p + 1 }}</a>
+            </li>
+          }
+          <li cPageItem [disabled]="page() >= totalPages() - 1">
+            <a cPageLink role="button" (click)="goToPage(page() + 1)">Suivant</a>
+          </li>
+        </c-pagination>
+      </div>
+    }
+  </c-card-body>
+</c-card>
+
+<app-passenger-detail-modal
+  [visible]="detailVisible()"
+  [passengerId]="detailPassengerId()"
+  (visibleChange)="detailVisible.set($event)"
+/>
+
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  [confirmLabel]="confirmLabel"
+  [confirmColor]="confirmColor"
+  [busy]="actionBusy()"
+  (visibleChange)="confirmVisible.set($event)"
+  (confirm)="onConfirm()"
+/>

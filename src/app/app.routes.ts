@@ -78,6 +78,20 @@ export const routes: Routes = [
         loadChildren: () => import('./features/reports/reports.module').then((m) => m.ReportsModule),
       },
       {
+        path: 'passengers',
+        canActivate: [permissionGuard],
+        data: { permission: 'PASSENGER_VIEW' },
+        loadChildren: () =>
+          import('./features/passengers/passengers.module').then((m) => m.PassengersModule),
+      },
+      {
+        path: 'statistics',
+        canActivate: [permissionGuard],
+        data: { permission: 'REPORT_STATISTICS_VIEW' },
+        loadChildren: () =>
+          import('./features/statistics/statistics.module').then((m) => m.StatisticsModule),
+      },
+      {
         path: 'audit-logs',
         canActivate: [permissionGuard],
         data: { permission: 'AUDIT_VIEW' },
