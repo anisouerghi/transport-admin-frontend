@@ -68,6 +68,25 @@
             <small class="text-body-secondary">Leave empty to keep the current password.</small>
           }
         </c-col>
+        <c-col md="12">
+          <label cLabel>Rôles</label>
+          <div class="border rounded p-3">
+            @for (role of roles(); track role.roleId) {
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [id]="'user-role-' + role.roleId"
+                  [checked]="isRoleChecked(role.roleId)"
+                  (change)="toggleRole(role.roleId, $any($event.target).checked)"
+                />
+                <label class="form-check-label" [for]="'user-role-' + role.roleId">
+                  {{ role.code }} — {{ role.label }}
+                </label>
+              </div>
+            }
+          </div>
+        </c-col>
       </c-row>
     </form>
   </c-modal-body>

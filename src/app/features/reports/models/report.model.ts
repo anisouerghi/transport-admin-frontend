@@ -55,7 +55,8 @@ export interface ReportFilter {
 
 export interface ReportReplyRequest {
   message: string;
-  userId: number;
+  /** Optionnel : déduit du JWT côté backend. */
+  userId?: number;
   statusId?: number;
   sendEmail?: boolean;
   publish?: boolean;

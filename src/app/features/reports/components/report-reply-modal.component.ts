@@ -47,7 +47,6 @@ export class ReportReplyModalComponent implements OnChanges {
 
   @Input() visible = false;
   @Input() report: Report | null = null;
-  @Input() userId = 1;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() replied = new EventEmitter<void>();
 
@@ -90,7 +89,6 @@ export class ReportReplyModalComponent implements OnChanges {
     const raw = this.form.getRawValue();
     const payload: ReportReplyRequest = {
       message: raw.message,
-      userId: this.userId,
       sendEmail: raw.sendEmail,
       publish: raw.publish,
       publicResponse: raw.publicResponse,

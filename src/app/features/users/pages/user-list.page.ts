@@ -20,6 +20,7 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal.component';
 import { UserFormModalComponent } from '../components/user-form-modal.component';
 import { User, UserFilter } from '../models/user.model';
@@ -49,6 +50,7 @@ type ConfirmAction = 'delete' | 'activate' | 'deactivate';
     SpinnerComponent,
     IconDirective,
     BadgeComponent,
+    HasPermissionDirective,
     UserFormModalComponent,
     ConfirmModalComponent,
   ],

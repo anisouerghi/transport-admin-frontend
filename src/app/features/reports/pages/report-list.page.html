@@ -75,7 +75,18 @@
                 <td>{{ r.status?.label }}</td>
                 <td class="text-end text-nowrap">
                   <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openView(r.reportId)">Consulter</button>
-                  <button cButton color="primary" variant="outline" size="sm" class="me-1" type="button" (click)="reply(r)">Répondre</button>
+                  <button
+                    *appHasPermission="'REPORT_REPLY'"
+                    cButton
+                    color="primary"
+                    variant="outline"
+                    size="sm"
+                    class="me-1"
+                    type="button"
+                    (click)="reply(r)"
+                  >
+                    Répondre
+                  </button>
                 </td>
               </tr>
             } @empty {
@@ -105,7 +116,6 @@
 <app-report-reply-modal
   [visible]="replyVisible()"
   [report]="currentReport()"
-  [userId]="currentUserId"
   (visibleChange)="replyVisible.set($event)"
   (replied)="load()"
 ></app-report-reply-modal>

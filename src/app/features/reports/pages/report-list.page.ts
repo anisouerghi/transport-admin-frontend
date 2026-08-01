@@ -19,6 +19,7 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { ReportDetailModalComponent } from '../components/report-detail-modal.component';
 import { ReportReplyModalComponent } from '../components/report-reply-modal.component';
 import { Report, ReportFilter, Status } from '../models/report.model';
@@ -45,6 +46,7 @@ import { ReportsService } from '../services/reports.service';
     PageLinkDirective,
     SpinnerComponent,
     BadgeComponent,
+    HasPermissionDirective,
     ReportDetailModalComponent,
     ReportReplyModalComponent,
   ],
@@ -67,7 +69,6 @@ export class ReportListPage implements OnInit {
   readonly replyVisible = signal(false);
   readonly currentReportId = signal<number | null>(null);
   readonly currentReport = signal<Report | null>(null);
-  readonly currentUserId = 1;
 
   readonly filterForm = this.fb.nonNullable.group({
     reference: '',
