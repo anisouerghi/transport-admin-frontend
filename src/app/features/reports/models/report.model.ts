@@ -20,6 +20,9 @@ export interface Passenger {
   email?: string;
   phoneNumber?: string;
   emailVerified?: boolean;
+  active?: boolean;
+  /** True si aucune identité renseignée (voyageur anonyme). */
+  anonymous?: boolean;
 }
 
 export interface Status {
@@ -75,8 +78,8 @@ export interface ReportReply {
   message: string;
   replyDate: string;
   emailSent?: boolean;
-  publish?: boolean;
   publicResponse?: boolean;
+  publish?: boolean;
   reportId: number;
   userId: number;
 }

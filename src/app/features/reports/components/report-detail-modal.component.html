@@ -75,10 +75,9 @@
                   <small class="text-body-secondary">{{ reply.replyDate | date: 'short' }}</small>
                 </div>
                 <p class="mb-2">{{ reply.message }}</p>
-                <div class="text-body-secondary">Email sent: {{ reply.emailSent ? 'Yes' : 'No' }}</div>
-                <div class="text-body-secondary">Visible à l'accueil: {{ reply.publish ? 'Yes' : 'No' }}</div>
+                <div class="text-body-secondary">E-mail envoyé : {{ reply.emailSent ? 'Oui' : 'Non' }}</div>
                 <div class="text-body-secondary">
-                  Visible à l'auteur de signalement: {{ reply.publicResponse ? 'Yes' : 'No' }}
+                  Visible à l'auteur : {{ reply.publicResponse !== false ? 'Oui' : 'Non' }}
                 </div>
               </div>
             }
