@@ -43,6 +43,7 @@ export type AuditAction =
   | 'REPLY'
   | 'STATUS_CHANGE'
   | 'PRIORITY_CHANGE'
+  | 'EMAIL_SEND'
   | 'UPLOAD'
   | 'OTHER';
 
@@ -76,6 +77,7 @@ export const AUDIT_ACTIONS: AuditAction[] = [
   'REPLY',
   'STATUS_CHANGE',
   'PRIORITY_CHANGE',
+  'EMAIL_SEND',
   'UPLOAD',
   'OTHER',
 ];

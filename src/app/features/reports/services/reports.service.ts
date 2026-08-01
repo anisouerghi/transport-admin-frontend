@@ -3,7 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api.config';
 import { ApiResponse, PageResult, SearchRequest } from '../../../shared/models/api-response.model';
-import { Report, ReportFilter, ReportReply, ReportReplyRequest, Status } from '../models/report.model';
+import {
+  Report,
+  ReportAttachment,
+  ReportFilter,
+  ReportReply,
+  ReportReplyRequest,
+  Status,
+} from '../models/report.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
@@ -11,6 +18,7 @@ export class ReportsService {
   private readonly baseUrl = API_CONFIG.admin.signalements;
   private readonly replyUrl = API_CONFIG.admin.reports;
   private readonly statusesUrl = API_CONFIG.admin.statuses;
+  private readonly attachmentsUrl = `${API_CONFIG.baseUrl}/admin/attachments`;
 
   /**
    * Recherche paginée serveur via POST /search.
@@ -47,10 +55,8 @@ export class ReportsService {
       .pipe(map((res) => res.data ?? []));
   }
 
-  createReply(reportId: number, payload: ReportReplyRequest): Observable<ReportReply> {
-    return this.http
-      .post<ApiResponse<ReportReply>>(`${this.replyUrl}/${reportId}/replies`, payload)
-      .pipe(map((r) => r.data));
+  createReply(reportId: number, payload: ReportReplyRequest): Observable<ApiResponse<ReportReply>> {
+    return this.http.post<ApiResponse<ReportReply>>(`${this.replyUrl}/${reportId}/replies`, payload);
   }
 
   getStatuses(): Observable<Status[]> {
@@ -61,5 +67,26 @@ export class ReportsService {
     return this.http
       .patch<ApiResponse<Report>>(`${this.baseUrl}/${reportId}/priority`, { priority })
       .pipe(map((r) => r.data));
+  }
+
+  /** Liste des pièces jointes d'un signalement. */
+  getAttachments(reportId: number): Observable<ReportAttachment[]> {
+    return this.http
+      .get<ApiResponse<ReportAttachment[]>>(`${this.baseUrl}/${reportId}/attachments`)
+      .pipe(map((res) => res.data ?? []));
+  }
+
+  /** Contenu fichier pour téléchargement (avec JWT). */
+  downloadAttachmentBlob(attachmentId: number): Observable<Blob> {
+    return this.http.get(`${this.attachmentsUrl}/${attachmentId}/download`, {
+      responseType: 'blob',
+    });
+  }
+
+  /** Contenu fichier pour aperçu inline (avec JWT). */
+  viewAttachmentBlob(attachmentId: number): Observable<Blob> {
+    return this.http.get(`${this.attachmentsUrl}/${attachmentId}/view`, {
+      responseType: 'blob',
+    });
   }
 }

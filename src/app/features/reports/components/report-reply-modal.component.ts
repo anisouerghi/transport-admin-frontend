@@ -151,27 +151,40 @@ export class ReportReplyModalComponent implements OnChanges {
       !!raw.priority &&
       raw.priority !== current.priority;
 
-    const afterReply = () => {
-      if (!priorityChanged) {
-        this.notifications.success('Réponse envoyée');
-        this.saving.set(false);
-        this.replied.emit();
-        this.close();
-        return;
-      }
-      this.reportsService.updatePriority(reportId, raw.priority).subscribe({
-        next: () => {
-          this.notifications.success('Réponse et priorité enregistrées');
+    this.reportsService.createReply(reportId, payload).subscribe({
+      next: (res) => {
+        const finish = (baseMsg: string) => {
+          if (res.success) {
+            this.notifications.success(res.message || baseMsg);
+          } else {
+            this.notifications.error(
+              res.message || "La réponse a été enregistrée, mais l'e-mail n'a pas pu être envoyé."
+            );
+          }
           this.saving.set(false);
           this.replied.emit();
           this.close();
-        },
-        error: () => this.saving.set(false),
-      });
-    };
+        };
 
-    this.reportsService.createReply(reportId, payload).subscribe({
-      next: () => afterReply(),
+        if (!priorityChanged) {
+          finish('Réponse enregistrée');
+          return;
+        }
+        this.reportsService.updatePriority(reportId, raw.priority).subscribe({
+          next: () => finish(res.message || 'Réponse et priorité enregistrées'),
+          error: () => {
+            if (res.success) {
+              this.notifications.success(res.message || 'Réponse enregistrée');
+            } else {
+              this.notifications.error(res.message || "Échec d'envoi de l'e-mail");
+            }
+            this.notifications.error("La priorité n'a pas pu être mise à jour.");
+            this.saving.set(false);
+            this.replied.emit();
+            this.close();
+          },
+        });
+      },
       error: () => this.saving.set(false),
     });
   }

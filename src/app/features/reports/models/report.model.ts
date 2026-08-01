@@ -32,6 +32,17 @@ export interface Status {
   displayOrder?: number;
 }
 
+/** Pièce jointe d'un signalement. */
+export interface ReportAttachment {
+  attachmentId: number;
+  uuid?: string;
+  fileName: string;
+  fileType?: string;
+  fileSize?: number | null;
+  reportId?: number;
+  image?: boolean;
+}
+
 export interface Report {
   reportId: number;
   uuid?: string;
@@ -45,6 +56,7 @@ export interface Report {
   reportTypeLabel?: string;
   passenger?: Passenger | null;
   status?: Status | null;
+  attachments?: ReportAttachment[];
 }
 
 export interface ReportFilter {

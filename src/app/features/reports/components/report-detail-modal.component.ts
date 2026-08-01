@@ -1,4 +1,14 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -18,7 +28,13 @@ import { AuthService } from '../../../core/services/auth.service';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReportsService } from '../services/reports.service';
-import { PRIORITY_OPTIONS, Priority, Report, ReportReply } from '../models/report.model';
+import {
+  PRIORITY_OPTIONS,
+  Priority,
+  Report,
+  ReportAttachment,
+  ReportReply,
+} from '../models/report.model';
 
 @Component({
   selector: 'app-report-detail-modal',
@@ -41,7 +57,7 @@ import { PRIORITY_OPTIONS, Priority, Report, ReportReply } from '../models/repor
   ],
   templateUrl: './report-detail-modal.component.html',
 })
-export class ReportDetailModalComponent implements OnChanges {
+export class ReportDetailModalComponent implements OnChanges, OnDestroy {
   private readonly reportsService = inject(ReportsService);
   private readonly notifications = inject(NotificationService);
   private readonly auth = inject(AuthService);
@@ -56,6 +72,9 @@ export class ReportDetailModalComponent implements OnChanges {
   readonly savingPriority = signal(false);
   readonly report = signal<Report | null>(null);
   readonly replies = signal<ReportReply[]>([]);
+  readonly attachments = signal<ReportAttachment[]>([]);
+  readonly previewUrls = signal<Record<number, string>>({});
+  readonly downloadingId = signal<number | null>(null);
   readonly priorities = PRIORITY_OPTIONS;
   readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
 
@@ -65,14 +84,17 @@ export class ReportDetailModalComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && !this.visible) {
-      this.report.set(null);
-      this.replies.set([]);
-      this.priorityForm.reset({ priority: '' });
+      this.resetState();
     }
     if (this.visible && this.reportId != null) {
       this.load(this.reportId);
       this.loadReplies(this.reportId);
+      this.loadAttachments(this.reportId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.clearPreviews();
   }
 
   close(): void {
@@ -105,12 +127,56 @@ export class ReportDetailModalComponent implements OnChanges {
     return this.priorities.find((p) => p.value === code)?.label ?? code ?? '—';
   }
 
+  formatSize(bytes?: number | null): string {
+    if (bytes == null || bytes < 0) {
+      return '—';
+    }
+    if (bytes < 1024) {
+      return `${bytes} o`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} Ko`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+  }
+
+  isPdf(att: ReportAttachment): boolean {
+    return (att.fileType ?? '').toLowerCase().includes('pdf')
+      || (att.fileName ?? '').toLowerCase().endsWith('.pdf');
+  }
+
+  download(att: ReportAttachment): void {
+    this.downloadingId.set(att.attachmentId);
+    this.reportsService.downloadAttachmentBlob(att.attachmentId).subscribe({
+      next: (blob) => {
+        this.triggerBrowserDownload(blob, att.fileName || `attachment-${att.attachmentId}`);
+        this.downloadingId.set(null);
+      },
+      error: () => this.downloadingId.set(null),
+    });
+  }
+
+  openView(att: ReportAttachment): void {
+    this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener');
+        // Libération différée : le nouvel onglet a le temps de charger
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      },
+    });
+  }
+
   private load(id: number): void {
     this.loading.set(true);
     this.reportsService.getReportById(id).subscribe({
       next: (r) => {
         this.report.set(r);
         this.priorityForm.patchValue({ priority: (r.priority as Priority) || '' });
+        if (r.attachments?.length) {
+          this.attachments.set(r.attachments);
+          this.loadImagePreviews(r.attachments);
+        }
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -122,5 +188,55 @@ export class ReportDetailModalComponent implements OnChanges {
       next: (items) => this.replies.set(items),
       error: () => this.replies.set([]),
     });
+  }
+
+  private loadAttachments(id: number): void {
+    this.reportsService.getAttachments(id).subscribe({
+      next: (items) => {
+        this.attachments.set(items);
+        this.loadImagePreviews(items);
+      },
+      error: () => this.attachments.set([]),
+    });
+  }
+
+  private loadImagePreviews(items: ReportAttachment[]): void {
+    this.clearPreviews();
+    for (const att of items) {
+      if (!att.image) {
+        continue;
+      }
+      this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          this.previewUrls.update((map) => ({ ...map, [att.attachmentId]: url }));
+        },
+      });
+    }
+  }
+
+  private triggerBrowserDownload(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private clearPreviews(): void {
+    const urls = Object.values(this.previewUrls());
+    for (const url of urls) {
+      URL.revokeObjectURL(url);
+    }
+    this.previewUrls.set({});
+  }
+
+  private resetState(): void {
+    this.report.set(null);
+    this.replies.set([]);
+    this.attachments.set([]);
+    this.clearPreviews();
+    this.priorityForm.reset({ priority: '' });
   }
 }

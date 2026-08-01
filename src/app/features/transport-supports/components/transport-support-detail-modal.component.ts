@@ -1,4 +1,14 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   ButtonCloseDirective,
   ButtonDirective,
@@ -24,7 +34,7 @@ import { TransportSupportsService } from '../services/transport-supports.service
     ButtonDirective,
   ],
   template: `
-    <c-modal alignment="center" size="lg" [visible]="visible" (visibleChange)="visibleChange.emit($event)">
+    <c-modal alignment="center" size="lg" [visible]="visible" (visibleChange)="onVisibleChange($event)">
       <c-modal-header>
         <h5 cModalTitle>Transport support details</h5>
         <button cButtonClose (click)="close()"></button>
@@ -42,11 +52,15 @@ import { TransportSupportsService } from '../services/transport-supports.service
             <dt class="col-sm-4">Created at</dt><dd class="col-sm-8">{{ item.createdAt ?? '—' }}</dd>
             <dt class="col-sm-4">Updated at</dt><dd class="col-sm-8">{{ item.updatedAt ?? '—' }}</dd>
           </dl>
-          @if (item.transportSupportId) {
-            <div class="mt-3 text-center">
-              <img [src]="qrUrl" alt="QR Code" class="border rounded" width="200" height="200" />
-            </div>
-          }
+          <div class="mt-3 text-center">
+            @if (qrLoading()) {
+              <p class="text-body-secondary mb-0">Chargement du QR…</p>
+            } @else if (qrObjectUrl()) {
+              <img [src]="qrObjectUrl()!" alt="QR Code" class="border rounded" width="200" height="200" />
+            } @else if (qrError()) {
+              <p class="text-danger mb-0">{{ qrError() }}</p>
+            }
+          </div>
         }
       </c-modal-body>
       <c-modal-footer>
@@ -55,18 +69,66 @@ import { TransportSupportsService } from '../services/transport-supports.service
     </c-modal>
   `,
 })
-export class TransportSupportDetailModalComponent {
+export class TransportSupportDetailModalComponent implements OnChanges, OnDestroy {
   private readonly service = inject(TransportSupportsService);
 
   @Input() visible = false;
   @Input() item: TransportSupport | null = null;
   @Output() visibleChange = new EventEmitter<boolean>();
 
-  get qrUrl(): string {
-    return this.item ? this.service.getQrImageUrl(this.item.transportSupportId) : '';
+  readonly qrObjectUrl = signal<string | null>(null);
+  readonly qrLoading = signal(false);
+  readonly qrError = signal<string | null>(null);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['item'] || changes['visible']) {
+      if (this.visible && this.item?.transportSupportId) {
+        this.loadQr(this.item.transportSupportId);
+      } else {
+        this.clearQr();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearQr();
+  }
+
+  onVisibleChange(value: boolean): void {
+    this.visibleChange.emit(value);
+    if (!value) {
+      this.clearQr();
+    }
   }
 
   close(): void {
     this.visibleChange.emit(false);
+    this.clearQr();
+  }
+
+  private loadQr(id: number): void {
+    this.clearQr();
+    this.qrLoading.set(true);
+    this.qrError.set(null);
+    this.service.getQrImageBlob(id).subscribe({
+      next: (blob) => {
+        this.qrObjectUrl.set(URL.createObjectURL(blob));
+        this.qrLoading.set(false);
+      },
+      error: () => {
+        this.qrError.set("Impossible de charger l'image QR.");
+        this.qrLoading.set(false);
+      },
+    });
+  }
+
+  private clearQr(): void {
+    const url = this.qrObjectUrl();
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+    this.qrObjectUrl.set(null);
+    this.qrLoading.set(false);
+    this.qrError.set(null);
   }
 }

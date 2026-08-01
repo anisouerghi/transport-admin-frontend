@@ -65,7 +65,15 @@ export class TransportSupportsService {
       .pipe(map((res) => res.data));
   }
 
-  /** URL directe de l'image PNG (pour balise &lt;img src&gt;). */
+  /**
+   * Image PNG via HttpClient (avec JWT).
+   * Ne pas utiliser dans &lt;img src&gt; directement : la balise n'envoie pas le token.
+   */
+  getQrImageBlob(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/qr`, { responseType: 'blob' });
+  }
+
+  /** @deprecated Préférer {@link getQrImageBlob} pour l'affichage authentifié. */
   getQrImageUrl(id: number): string {
     return `${this.baseUrl}/${id}/qr`;
   }

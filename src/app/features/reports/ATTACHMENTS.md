@@ -2,10 +2,10 @@
 
 Dans la fiche détail d'un signalement (`ReportDetailModalComponent`) :
 
-- chargement via `GET /api/admin/signalements/{id}/attachments` (et/ou champ `attachments` du détail) ;
-- miniature pour les images (`…/attachments/{id}/view`) ;
+- chargement via `GET /api/admin/signalements/{id}/attachments` (et champ `attachments` du détail) ;
+- miniature image via `GET /api/admin/attachments/{id}/view` (blob + JWT) ;
 - libellé PDF pour les documents ;
-- actions **Voir** (inline) et **Télécharger** ;
+- actions **Voir** (nouvel onglet) et **Télécharger** (`…/download`) ;
 - message **Aucune pièce jointe.** si la liste est vide.
 
-Service : `ReportsService.getAttachments`, `attachmentViewUrl`, `attachmentDownloadUrl`.
+Service : `ReportsService.getAttachments`, `viewAttachmentBlob`, `downloadAttachmentBlob`.
