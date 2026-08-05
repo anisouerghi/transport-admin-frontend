@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import {
   BadgeComponent,
   ButtonDirective,
@@ -195,6 +196,134 @@ export class TransportSupportListPage implements OnInit {
         this.notifications.success('QR code regenerated');
         this.load();
       },
+    });
+  }
+
+  printQr(item: TransportSupport): void {
+    this.service.getQrImageBlob(item.transportSupportId).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const printWindow = window.open('', '_blank', 'width=800,height=800');
+
+        if (!printWindow) {
+          this.notifications.error('Please allow popups to print the QR code.');
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>QR Code - ${item.reference}</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+                .wrap { text-align: center; padding: 24px; }
+                img { max-width: 100%; height: auto; width: 320px; }
+                .label { margin-top: 16px; font-size: 16px; }
+              </style>
+            </head>
+            <body>
+              <div class="wrap">
+                <img src="${objectUrl}" alt="QR Code" />
+                <div class="label">${item.reference} - ${item.label}</div>
+              </div>
+              <script>
+                window.onload = function () {
+                  window.print();
+                  window.setTimeout(function () { window.close(); }, 500);
+                };
+              </script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+      },
+      error: () => this.notifications.error('Unable to load the QR code for printing.'),
+    });
+  }
+
+  printAllQr(): void {
+    const items = this.items();
+    if (!items.length) {
+      this.notifications.info('No transport supports to print.');
+      return;
+    }
+
+    this.actionBusy.set(true);
+    const qrRequests = items.map((item) => this.service.getQrImageBlob(item.transportSupportId));
+
+    forkJoin(qrRequests).subscribe({
+      next: (blobs) => {
+        const objectUrls = blobs.map((blob) => URL.createObjectURL(blob));
+        const printWindow = window.open('', '_blank', 'width=1200,height=1000');
+
+        if (!printWindow) {
+          objectUrls.forEach((url) => URL.revokeObjectURL(url));
+          this.actionBusy.set(false);
+          this.notifications.error('Please allow popups to print all QR codes.');
+          return;
+        }
+
+        const cards = items
+          .map((item, index) => {
+            const objectUrl = objectUrls[index];
+            return `
+              <div class="page-break">
+                <div class="card">
+                  <img src="${objectUrl}" alt="QR Code" />
+                  <div class="label">${item.reference} - ${item.label}</div>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>All QR Codes</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 16px; }
+                .page-break { page-break-after: always; margin-bottom: 24px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+                .page-break:last-child { page-break-after: auto; }
+                .card { text-align: center; padding: 24px; border: 1px solid #ddd; border-radius: 8px; display: inline-block; min-width: 320px; }
+                img { max-width: 100%; height: auto; width: 360px; }
+                .label { margin-top: 16px; font-size: 16px; font-weight: 600; }
+              </style>
+            </head>
+            <body>
+              ${cards}
+              <script>
+                window.onload = function () {
+                  window.print();
+                  window.setTimeout(function () { window.close(); }, 500);
+                };
+              </script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        window.setTimeout(() => objectUrls.forEach((url) => URL.revokeObjectURL(url)), 2000);
+        this.actionBusy.set(false);
+        this.notifications.success('Printing started for the current QR codes.');
+      },
+      error: () => {
+        this.actionBusy.set(false);
+        this.notifications.error('Unable to load the QR codes for printing.');
+      },
+    });
+  }
+
+  regenerateAllQr(): void {
+    this.actionBusy.set(true);
+    this.service.regenerateAllQr().subscribe({
+      next: () => {
+        this.notifications.success('All QR codes regenerated');
+        this.actionBusy.set(false);
+        this.load();
+      },
+      error: () => this.actionBusy.set(false),
     });
   }
 
