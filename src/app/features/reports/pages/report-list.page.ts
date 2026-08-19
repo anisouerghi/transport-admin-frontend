@@ -75,6 +75,7 @@ export class ReportListPage implements OnInit {
     reportTypeId: '' as string | number,
     priority: '',
     statusId: '' as string | number,
+    replied: '',
   });
 
   ngOnInit(): void {
@@ -92,6 +93,7 @@ export class ReportListPage implements OnInit {
       priority: raw.priority,
       reportTypeId: reportTypeId && reportTypeId > 0 ? reportTypeId : undefined,
       statusId: statusId && statusId > 0 ? statusId : undefined,
+      replied: raw.replied === '' ? undefined : raw.replied === 'true',
     };
     this.reportsService.getReports(this.page(), this.size, filter).subscribe({
       next: (res) => {
@@ -111,7 +113,7 @@ export class ReportListPage implements OnInit {
   }
 
   resetFilters(): void {
-    this.filterForm.reset({ reference: '', reportTypeId: '', priority: '', statusId: '' });
+    this.filterForm.reset({ reference: '', reportTypeId: '', priority: '', statusId: '', replied: '' });
     this.page.set(0);
     this.load();
   }

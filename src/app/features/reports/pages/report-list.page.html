@@ -32,6 +32,14 @@
             }
           </select>
         </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-replied">Réponse</label>
+          <select cSelect id="filter-replied" formControlName="replied" class="form-select">
+            <option value="">Toutes</option>
+            <option value="true">Répondu</option>
+            <option value="false">Non répondu</option>
+          </select>
+        </c-col>
         <c-col md="2" class="d-flex gap-2">
           <button cButton color="primary" type="submit">Filter</button>
           <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">
@@ -57,6 +65,7 @@
               <th>Transport</th>
               <th>Passenger</th>
               <th>Status</th>
+              <th>Réponse</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
@@ -74,6 +83,13 @@
                 <td>{{ r.transportSupport?.label }}</td>
                 <td>{{ r.passenger?.name }}</td>
                 <td>{{ r.status?.label }}</td>
+                <td>
+                  @if (r.replied) {
+                    <c-badge color="success">Répondu</c-badge>
+                  } @else {
+                    <c-badge color="secondary">Non répondu</c-badge>
+                  }
+                </td>
                 <td class="text-end text-nowrap">
                   <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openView(r.reportId)">Consulter</button>
                   <button
@@ -92,7 +108,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="8" class="text-center text-body-secondary py-4">No reports found.</td>
+                <td colspan="9" class="text-center text-body-secondary py-4">No reports found.</td>
               </tr>
             }
           </tbody>
