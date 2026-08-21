@@ -24,6 +24,8 @@ import { NotificationService } from '../../../core/services/notification.service
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal.component';
 import { SupportTypesService } from '../../support-types/services/support-types.service';
 import { SupportType } from '../../support-types/models/support-type.model';
+import { DistrictsService } from '../services/districts.service';
+import { District } from '../models/district.model';
 import { TransportSupportDetailModalComponent } from '../components/transport-support-detail-modal.component';
 import { TransportSupportFormModalComponent } from '../components/transport-support-form-modal.component';
 import { QR_STATUSES, SUPPORT_STATUSES, TransportSupport, TransportSupportFilter } from '../models/transport-support.model';
@@ -66,6 +68,7 @@ import { TransportSupportsService } from '../services/transport-supports.service
 export class TransportSupportListPage implements OnInit {
   private readonly service = inject(TransportSupportsService);
   private readonly supportTypesService = inject(SupportTypesService);
+  private readonly districtsService = inject(DistrictsService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
 
@@ -73,6 +76,7 @@ export class TransportSupportListPage implements OnInit {
   readonly actionBusy = signal(false);
   readonly items = signal<TransportSupport[]>([]);
   readonly supportTypes = signal<SupportType[]>([]);
+  readonly districts = signal<District[]>([]);
   readonly totalElements = signal(0);
   readonly totalPages = signal(1);
   readonly page = signal(0);
@@ -97,10 +101,12 @@ export class TransportSupportListPage implements OnInit {
     supportStatus: '',
     qrStatus: '',
     supportTypeId: '' as '' | string,
+    districtId: '' as '' | string,
   });
 
   ngOnInit(): void {
     this.supportTypesService.getAll().subscribe((t) => this.supportTypes.set(t));
+    this.districtsService.getAll().subscribe((d) => this.districts.set(d));
     this.load();
   }
 
@@ -113,7 +119,8 @@ export class TransportSupportListPage implements OnInit {
       uuid: raw.uuid,
       supportStatus: raw.supportStatus || undefined,
       qrStatus: raw.qrStatus || undefined,
-      supportTypeId: raw.supportTypeId ? Number(raw.supportTypeId) : null,
+      supportTypeId: raw.supportTypeId ? Number(raw.supportTypeId) : undefined,
+      districtId: raw.districtId ? Number(raw.districtId) : undefined,
     };
     this.service.search(this.page(), this.pageSize, filter, this.sortBy(), this.sortDirection()).subscribe({
       next: (result) => {
@@ -133,7 +140,7 @@ export class TransportSupportListPage implements OnInit {
   }
 
   resetFilters(): void {
-    this.filterForm.reset({ reference: '', label: '', uuid: '', supportStatus: '', qrStatus: '', supportTypeId: '' });
+    this.filterForm.reset({ reference: '', label: '', uuid: '', supportStatus: '', qrStatus: '', supportTypeId: '', districtId: '' });
     this.page.set(0);
     this.load();
   }
@@ -199,6 +206,17 @@ export class TransportSupportListPage implements OnInit {
     });
   }
 
+  private qrPrintMessageMarkup(): string {
+    return `
+      <div class="message-block">
+        <div class="message large">Une réclamation ?</div>
+        <div class="message large">la TRANSTU est à votre écoute!</div>
+        <div class="message small">exprimez-vous librement via notre formulaire de réclamation sécurisé.</div>
+        <div class="message small">c'est simple et vous recevez des réponses pour suivre votre requete.</div>
+      </div>
+    `;
+  }
+
   printQr(item: TransportSupport): void {
     this.service.getQrImageBlob(item.transportSupportId).subscribe({
       next: (blob) => {
@@ -218,14 +236,19 @@ export class TransportSupportListPage implements OnInit {
               <style>
                 body { font-family: Arial, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
                 .wrap { text-align: center; padding: 24px; }
+                .message-block { margin-bottom: 18px; }
+                .message { line-height: 1.4; }
+                .message.large { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+                .message.small { font-size: 12px; font-weight: 400; margin-bottom: 4px; }
                 img { max-width: 100%; height: auto; width: 320px; }
                 .label { margin-top: 16px; font-size: 16px; }
               </style>
             </head>
             <body>
               <div class="wrap">
+                ${this.qrPrintMessageMarkup()}
                 <img src="${objectUrl}" alt="QR Code" />
-                <div class="label">${item.reference} - ${item.label}</div>
+                <div class="label">${item.supportTypeLabel ?? 'Support type'} - ${item.label}</div>
               </div>
               <script>
                 window.onload = function () {
@@ -271,8 +294,9 @@ export class TransportSupportListPage implements OnInit {
             return `
               <div class="page-break">
                 <div class="card">
+                  ${this.qrPrintMessageMarkup()}
                   <img src="${objectUrl}" alt="QR Code" />
-                  <div class="label">${item.reference} - ${item.label}</div>
+                  <div class="label">${item.label} - ${item.supportTypeLabel ?? 'Support type'}</div>
                 </div>
               </div>
             `;
@@ -288,6 +312,10 @@ export class TransportSupportListPage implements OnInit {
                 .page-break { page-break-after: always; margin-bottom: 24px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
                 .page-break:last-child { page-break-after: auto; }
                 .card { text-align: center; padding: 24px; border: 1px solid #ddd; border-radius: 8px; display: inline-block; min-width: 320px; }
+                .message-block { margin-bottom: 18px; }
+                .message { line-height: 1.4; }
+                .message.large { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+                .message.small { font-size: 12px; font-weight: 400; margin-bottom: 4px; }
                 img { max-width: 100%; height: auto; width: 360px; }
                 .label { margin-top: 16px; font-size: 16px; font-weight: 600; }
               </style>

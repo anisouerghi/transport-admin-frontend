@@ -37,6 +37,15 @@
             }
           </select>
         </c-col>
+        <c-col md="6">
+          <label cLabel for="districtId">District</label>
+          <select cSelect id="districtId" formControlName="districtId" class="form-select">
+            <option [value]="0" disabled>Select…</option>
+            @for (d of districts(); track d.districtId) {
+              <option [value]="d.districtId">{{ d.codeDistrict }} — {{ d.libelleDistrict }}</option>
+            }
+          </select>
+        </c-col>
       </c-row>
       @if (!isEdit) {
         <small class="text-body-secondary d-block mt-3">QR code will be generated automatically by the server.</small>

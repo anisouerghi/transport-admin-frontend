@@ -32,6 +32,10 @@
           <label cLabel>Support type</label>
           <select cSelect formControlName="supportTypeId" class="form-select"><option value="">All</option>@for (t of supportTypes(); track t.supportTypeId) { <option [value]="t.supportTypeId">{{ t.code }}</option> }</select>
         </c-col>
+        <c-col md="2">
+          <label cLabel>District</label>
+          <select cSelect formControlName="districtId" class="form-select"><option value="">All</option>@for (d of districts(); track d.districtId) { <option [value]="d.districtId">{{ d.codeDistrict }} — {{ d.libelleDistrict }}</option> }</select>
+        </c-col>
         <c-col md="12" class="d-flex gap-2">
           <button cButton color="primary" type="submit">Filter</button>
           <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">Reset</button>
@@ -50,6 +54,7 @@
               <th role="button" (click)="toggleSort('label')">Label</th>
               <th>Type</th>
               <th>Status</th>
+              <th>District</th>
               <th>QR</th>
               <th class="text-end">Actions</th>
             </tr>
@@ -61,6 +66,7 @@
                 <td>{{ item.label }}</td>
                 <td>{{ item.supportTypeCode }}</td>
                 <td><c-badge [color]="item.supportStatus === 'ACTIVE' ? 'success' : 'secondary'">{{ item.supportStatus }}</c-badge></td>
+                <td>{{ item.districtLabel }}</td>
                 <td>{{ item.qrStatus ?? '—' }}</td>
                 <td class="text-end text-nowrap">
                   <button cButton color="secondary" variant="outline" size="sm" class="me-1" type="button" (click)="openDetail(item)">View</button>

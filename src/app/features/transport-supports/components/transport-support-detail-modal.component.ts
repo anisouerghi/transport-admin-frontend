@@ -46,6 +46,7 @@ import { TransportSupportsService } from '../services/transport-supports.service
             <dt class="col-sm-4">Label</dt><dd class="col-sm-8">{{ item.label }}</dd>
             <dt class="col-sm-4">UUID</dt><dd class="col-sm-8 text-break">{{ item.uuid }}</dd>
             <dt class="col-sm-4">Support type</dt><dd class="col-sm-8">{{ item.supportTypeCode }} — {{ item.supportTypeLabel }}</dd>
+            <dt class="col-sm-4">District</dt><dd class="col-sm-8">{{ item.districtCode }} — {{ item.districtLabel }}</dd>
             <dt class="col-sm-4">Support status</dt><dd class="col-sm-8">{{ item.supportStatus }}</dd>
             <dt class="col-sm-4">QR status</dt><dd class="col-sm-8">{{ item.qrStatus ?? '—' }}</dd>
             <dt class="col-sm-4">QR URL</dt><dd class="col-sm-8 text-break"><a [href]="item.qrCodeUrl" target="_blank" rel="noopener">{{ item.qrCodeUrl }}</a></dd>

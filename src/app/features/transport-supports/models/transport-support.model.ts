@@ -15,6 +15,9 @@ export interface TransportSupport {
   qrDateImpression?: string;
   qrStatus?: string;
   supportStatus: string;
+  districtId: number;
+  districtCode: string;
+  districtLabel: string;
   supportTypeId: number;
   supportTypeCode: string;
   supportTypeLabel: string;
@@ -33,6 +36,7 @@ export interface TransportSupportRequest {
   label: string;
   supportStatus?: string;
   supportTypeId: number;
+  districtId: number;
   version?: number;
 }
 
@@ -44,6 +48,7 @@ export interface TransportSupportFilter {
   qrStatus?: string;
   supportStatus?: string;
   supportTypeId?: number | null;
+  districtId?: number | null;
 }
 
 /** Valeurs possibles de supportStatus (alignées sur l'enum backend). */

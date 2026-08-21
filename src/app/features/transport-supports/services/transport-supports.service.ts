@@ -26,8 +26,15 @@ export class TransportSupportsService {
     sortBy?: string,
     sortDirection: 'ASC' | 'DESC' = 'ASC'
   ): Observable<PageResult<TransportSupport>> {
+    const filters = Object.entries(filter).reduce((acc, [key, value]) => {
+      if (value === undefined || value === null || value === '') {
+        return acc;
+      }
+      return { ...acc, [key]: value };
+    }, {} as TransportSupportFilter);
+
     const body: SearchRequest<TransportSupportFilter> = {
-      filters: filter,
+      filters,
       pageable: { page, size, sortBy, sortDirection },
     };
     return this.http

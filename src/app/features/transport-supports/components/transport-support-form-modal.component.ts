@@ -18,6 +18,8 @@ import {
 import { NotificationService } from '../../../core/services/notification.service';
 import { SupportType } from '../../support-types/models/support-type.model';
 import { SupportTypesService } from '../../support-types/services/support-types.service';
+import { District } from '../models/district.model';
+import { DistrictsService } from '../services/districts.service';
 import { SUPPORT_STATUSES, TransportSupport, TransportSupportRequest } from '../models/transport-support.model';
 import { TransportSupportsService } from '../services/transport-supports.service';
 
@@ -45,6 +47,7 @@ import { TransportSupportsService } from '../services/transport-supports.service
 export class TransportSupportFormModalComponent implements OnChanges {
   private readonly service = inject(TransportSupportsService);
   private readonly supportTypesService = inject(SupportTypesService);
+  private readonly districtsService = inject(DistrictsService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
 
@@ -56,6 +59,7 @@ export class TransportSupportFormModalComponent implements OnChanges {
   readonly saving = signal(false);
   readonly submitted = signal(false);
   readonly supportTypes = signal<SupportType[]>([]);
+  readonly districts = signal<District[]>([]);
   readonly statuses = SUPPORT_STATUSES;
 
   readonly form = this.fb.nonNullable.group({
@@ -63,6 +67,7 @@ export class TransportSupportFormModalComponent implements OnChanges {
     label: ['', [Validators.required, Validators.maxLength(150)]],
     supportTypeId: [0, [Validators.required, Validators.min(1)]],
     supportStatus: 'ACTIVE',
+    districtId: [0, [Validators.required, Validators.min(1)]],
   });
 
   get isEdit(): boolean {
@@ -72,15 +77,17 @@ export class TransportSupportFormModalComponent implements OnChanges {
   ngOnChanges(): void {
     this.submitted.set(false);
     this.supportTypesService.getAll().subscribe((types) => this.supportTypes.set(types));
+    this.districtsService.getAll().subscribe((districts) => this.districts.set(districts));
     if (this.item) {
       this.form.reset({
         reference: this.item.reference,
         label: this.item.label,
         supportTypeId: this.item.supportTypeId,
         supportStatus: this.item.supportStatus,
+        districtId: this.item.districtId ?? 0,
       });
     } else {
-      this.form.reset({ reference: '', label: '', supportTypeId: 0, supportStatus: 'ACTIVE' });
+      this.form.reset({ reference: '', label: '', supportTypeId: 0, supportStatus: 'ACTIVE', districtId: 0 });
     }
   }
 
@@ -104,6 +111,7 @@ export class TransportSupportFormModalComponent implements OnChanges {
       label: raw.label,
       supportTypeId: Number(raw.supportTypeId),
       supportStatus: raw.supportStatus,
+      districtId: Number(raw.districtId)
     };
     if (this.isEdit && this.item?.version != null) {
       payload.version = this.item.version;

@@ -9,6 +9,7 @@ export const API_CONFIG = {
     roles: `${Config.API_LINK}/api/admin/roles`,
     permissions: `${Config.API_LINK}/api/admin/permissions`,
     supportTypes: `${Config.API_LINK}/api/admin/support-types`,
+    districts: `${Config.API_LINK}/api/admin/districts`,
     reportTypes: `${Config.API_LINK}/api/admin/report-types`,
     transportSupports: `${Config.API_LINK}/api/admin/transport-supports`,
     signalements: `${Config.API_LINK}/api/admin/signalements`,
