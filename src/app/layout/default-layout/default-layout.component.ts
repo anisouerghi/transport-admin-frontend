@@ -14,6 +14,7 @@ import { ToastContainerComponent } from '../../shared/components/toast-container
 import { AuthService } from '../../core/services/auth.service';
 import { MenuItem } from '../../core/models/auth.model';
 import { INavData } from '@coreui/angular';
+import { UpdatePasswordModalComponent } from '../../features/auth/components/update-password-modal.component';
 
 import {
   ContainerComponent,
@@ -67,11 +68,12 @@ const ENSURED_MENUS: MenuItem[] = [
     RouterLink,
     ShadowOnScrollDirective,
     ToastContainerComponent,
+    UpdatePasswordModalComponent,
   ],
 })
 export class DefaultLayoutComponent implements OnInit {
   private readonly router = inject(Router);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
 
   readonly rtl = environment.rtl;
   readonly brandFull = 'transport signalement admin';

@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import {
   BreadcrumbRouterComponent,
   ColorModeService,
@@ -39,7 +39,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class DefaultHeaderComponent extends HeaderComponent {
   readonly #colorModeService = inject(ColorModeService);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
   readonly colorMode = this.#colorModeService.colorMode;
 
   readonly colorModes = [

@@ -18,6 +18,8 @@ export class AuthService {
 
   private readonly sessionSignal = signal<AuthSession | null>(this.readStorage());
 
+  readonly showPasswordModal = signal(false);
+
   readonly session = this.sessionSignal.asReadonly();
   readonly isAuthenticated = computed(() => !!this.sessionSignal()?.token);
   readonly permissions = computed(() => this.sessionSignal()?.permissions ?? []);
@@ -50,6 +52,10 @@ export class AuthService {
     if (navigate) {
       void this.router.navigate(['/login']);
     }
+  }
+
+  updatePassword(payload: any): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${API_CONFIG.auth}/update-password`, payload);
   }
 
   getToken(): string | null {
