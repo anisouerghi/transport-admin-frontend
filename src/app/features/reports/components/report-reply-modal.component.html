@@ -109,18 +109,23 @@
                   type="checkbox"
                   id="reply-send-email"
                   formControlName="sendEmail"
+                  [disabled]="!form.controls.publicResponse.value"
                 />
                 <label class="form-check-label" for="reply-send-email">
                   Envoyer également cette réponse par e-mail
                 </label>
               </div>
               <p class="small text-body-secondary mb-2 mt-2">
-                La réponse sera enregistrée dans l'application et envoyée automatiquement à l'adresse
-                e-mail du voyageur.
+                Disponible uniquement si la réponse est visible à l'auteur. Un lien sécurisé (UUID)
+                sera inclus dans l'e-mail.
               </p>
               <div class="small">
                 <span class="text-body-secondary">Destinataire :</span>
                 <div class="fw-semibold">{{ passengerEmail() }}</div>
+                <p class="small text-body-secondary mb-0 mt-2">
+                  L'e-mail part vers cette adresse (pas celle de l'agent). Vérifiez aussi les
+                  indésirables.
+                </p>
               </div>
             </div>
           } @else {
@@ -138,6 +143,7 @@
                 type="checkbox"
                 id="reply-public-response"
                 formControlName="publicResponse"
+                (change)="onPublicResponseChange()"
               />
               <label class="form-check-label" for="reply-public-response">
                 Visible à l'auteur du signalement

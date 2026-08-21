@@ -56,6 +56,8 @@ export interface Report {
   reportTypeLabel?: string;
   passenger?: Passenger | null;
   status?: Status | null;
+  /** true si au moins une réponse agent est enregistrée (backend). */
+  replied?: boolean;
   attachments?: ReportAttachment[];
 }
 
@@ -73,6 +75,8 @@ export interface ReportFilter {
   closureDateTo?: string;
   reportType?: string;
   status?: string;
+  /** true = répondu ; false = non répondu ; omis = tous. */
+  replied?: boolean;
 }
 
 export interface ReportReplyRequest {

@@ -97,6 +97,14 @@ export class ReportReplyModalComponent implements OnChanges {
     }
   }
 
+  onPublicResponseChange(): void {
+    if (!this.form.controls.publicResponse.value) {
+      this.form.patchValue({ sendEmail: false });
+    } else if (this.hasPassengerEmail()) {
+      this.form.patchValue({ sendEmail: true });
+    }
+  }
+
   /** Voyageur anonyme (aucune identité). */
   isAnonymous(): boolean {
     const p = this.detail()?.passenger ?? this.report?.passenger;
@@ -135,7 +143,7 @@ export class ReportReplyModalComponent implements OnChanges {
     const canEmail = this.hasPassengerEmail();
     const payload: ReportReplyRequest = {
       message: raw.message,
-      sendEmail: canEmail ? raw.sendEmail : false,
+      sendEmail: canEmail && raw.publicResponse ? raw.sendEmail : false,
       publicResponse: raw.publicResponse,
       publish: raw.publish,
     };
