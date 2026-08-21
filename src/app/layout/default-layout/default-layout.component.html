@@ -48,3 +48,8 @@
 </div>
 
 <app-toast-container />
+<app-update-password-modal
+  [visible]="auth.showPasswordModal()"
+  (visibleChange)="auth.showPasswordModal.set($event)"
+/>
+

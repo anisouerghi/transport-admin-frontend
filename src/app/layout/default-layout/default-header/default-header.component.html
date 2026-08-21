@@ -58,7 +58,16 @@
         </h6>
       </li>
       <li>
-        <button cDropdownItem type="button" (click)="logout()">Déconnexion</button>
+        <button cDropdownItem type="button" (click)="logout()">
+          <svg cIcon name="cilLockLocked" class="me-2"></svg>
+          Déconnexion
+        </button>
+      </li>
+      <li>
+        <button cDropdownItem type="button" (click)="auth.showPasswordModal.set(true)">
+          <svg cIcon name="cilSettings" class="me-2"></svg>
+          Modifier mot de passe
+        </button>
       </li>
     </ul>
   </c-dropdown>
