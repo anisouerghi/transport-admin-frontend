@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
+  BadgeComponent,
   ButtonCloseDirective,
   ButtonDirective,
   ColComponent,
@@ -14,9 +15,11 @@ import {
   ModalHeaderComponent,
   ModalTitleDirective,
   RowComponent,
+  SpinnerComponent,
 } from '@coreui/angular';
+import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { ReportReplyRequest, Report, Status } from '../models/report.model';
+import { PRIORITY_OPTIONS, Priority, ReportReplyRequest, Report, Status } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
 @Component({
@@ -37,42 +40,91 @@ import { ReportsService } from '../services/reports.service';
     FormSelectDirective,
     RowComponent,
     ColComponent,
+    BadgeComponent,
+    SpinnerComponent,
   ],
   templateUrl: './report-reply-modal.component.html',
 })
 export class ReportReplyModalComponent implements OnChanges {
   private readonly reportsService = inject(ReportsService);
   private readonly notifications = inject(NotificationService);
+  private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
   @Input() visible = false;
   @Input() report: Report | null = null;
-  @Input() userId = 1;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() replied = new EventEmitter<void>();
 
   readonly saving = signal(false);
+  readonly loadingReport = signal(false);
   readonly submitted = signal(false);
   readonly statuses = signal<Status[]>([]);
+  /** Signalement enrichi (détail API) pour infos voyageur complètes. */
+  readonly detail = signal<Report | null>(null);
+  readonly priorities = PRIORITY_OPTIONS;
+  readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
 
   readonly form = this.fb.nonNullable.group({
     message: ['', [Validators.required, Validators.maxLength(2000)]],
     statusId: '' as string | number,
-    sendEmail: false,
+    priority: '' as Priority | '',
+    sendEmail: true,
+    publicResponse: true,
     publish: false,
   });
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
     this.submitted.set(false);
     if (!this.visible) {
-      this.form.reset({ message: '', statusId: '', sendEmail: false, publish: false });
+      this.detail.set(null);
+      this.form.reset({
+        message: '',
+        statusId: '',
+        priority: '',
+        sendEmail: true,
+        publicResponse: true,
+        publish: false,
+      });
       return;
     }
     if (this.statuses().length === 0) {
       this.loadStatuses();
     }
-    const currentStatusId = this.report?.status?.statusId ?? '';
-    this.form.reset({ message: '', statusId: currentStatusId, sendEmail: false, publish: false });
+    const reportId = this.report?.reportId;
+    if (reportId != null && (changes['visible'] || changes['report'])) {
+      this.loadDetail(reportId);
+    }
+  }
+
+  onPublicResponseChange(): void {
+    if (!this.form.controls.publicResponse.value) {
+      this.form.patchValue({ sendEmail: false });
+    } else if (this.hasPassengerEmail()) {
+      this.form.patchValue({ sendEmail: true });
+    }
+  }
+
+  /** Voyageur anonyme (aucune identité). */
+  isAnonymous(): boolean {
+    const p = this.detail()?.passenger ?? this.report?.passenger;
+    if (!p) {
+      return true;
+    }
+    if (p.anonymous === true) {
+      return true;
+    }
+    return !p.name?.trim() && !p.email?.trim() && !p.phoneNumber?.trim();
+  }
+
+  passengerEmail(): string | null {
+    const email = this.detail()?.passenger?.email ?? this.report?.passenger?.email;
+    const trimmed = email?.trim() ?? '';
+    return this.isValidEmail(trimmed) ? trimmed : null;
+  }
+
+  hasPassengerEmail(): boolean {
+    return !!this.passengerEmail();
   }
 
   close(): void {
@@ -81,16 +133,18 @@ export class ReportReplyModalComponent implements OnChanges {
 
   submit(): void {
     this.submitted.set(true);
-    if (this.form.invalid || !this.report) {
+    const current = this.detail() ?? this.report;
+    if (this.form.invalid || !current) {
       this.form.markAllAsTouched();
       return;
     }
 
     const raw = this.form.getRawValue();
+    const canEmail = this.hasPassengerEmail();
     const payload: ReportReplyRequest = {
       message: raw.message,
-      userId: this.userId,
-      sendEmail: raw.sendEmail,
+      sendEmail: canEmail && raw.publicResponse ? raw.sendEmail : false,
+      publicResponse: raw.publicResponse,
       publish: raw.publish,
     };
     const statusId = Number(raw.statusId);
@@ -99,15 +153,80 @@ export class ReportReplyModalComponent implements OnChanges {
     }
 
     this.saving.set(true);
-    this.reportsService.createReply(this.report.reportId, payload).subscribe({
-      next: () => {
-        this.notifications.success('Reply created');
-        this.saving.set(false);
-        this.replied.emit();
-        this.close();
+    const reportId = current.reportId;
+    const priorityChanged =
+      this.canUpdatePriority() &&
+      !!raw.priority &&
+      raw.priority !== current.priority;
+
+    this.reportsService.createReply(reportId, payload).subscribe({
+      next: (res) => {
+        const finish = (baseMsg: string) => {
+          if (res.success) {
+            this.notifications.success(res.message || baseMsg);
+          } else {
+            this.notifications.error(
+              res.message || "La réponse a été enregistrée, mais l'e-mail n'a pas pu être envoyé."
+            );
+          }
+          this.saving.set(false);
+          this.replied.emit();
+          this.close();
+        };
+
+        if (!priorityChanged) {
+          finish('Réponse enregistrée');
+          return;
+        }
+        this.reportsService.updatePriority(reportId, raw.priority).subscribe({
+          next: () => finish(res.message || 'Réponse et priorité enregistrées'),
+          error: () => {
+            if (res.success) {
+              this.notifications.success(res.message || 'Réponse enregistrée');
+            } else {
+              this.notifications.error(res.message || "Échec d'envoi de l'e-mail");
+            }
+            this.notifications.error("La priorité n'a pas pu être mise à jour.");
+            this.saving.set(false);
+            this.replied.emit();
+            this.close();
+          },
+        });
+      },
+      error: () => this.saving.set(false),
+    });
+  }
+
+  private loadDetail(reportId: number): void {
+    this.loadingReport.set(true);
+    this.reportsService.getReportById(reportId).subscribe({
+      next: (r) => {
+        this.detail.set(r);
+        const email = r.passenger?.email?.trim() ?? '';
+        const hasEmail = this.isValidEmail(email);
+        this.form.reset({
+          message: '',
+          statusId: r.status?.statusId ?? '',
+          priority: (r.priority as Priority) || '',
+          sendEmail: hasEmail,
+          publicResponse: true,
+          publish: false,
+        });
+        this.loadingReport.set(false);
       },
       error: () => {
-        this.saving.set(false);
+        // Fallback sur le report de la liste
+        const fallback = this.report;
+        this.detail.set(fallback);
+        const email = fallback?.passenger?.email?.trim() ?? '';
+        this.form.patchValue({
+          statusId: fallback?.status?.statusId ?? '',
+          priority: (fallback?.priority as Priority) || '',
+          sendEmail: this.isValidEmail(email),
+          publicResponse: true,
+          publish: false,
+        });
+        this.loadingReport.set(false);
       },
     });
   }
@@ -117,5 +236,12 @@ export class ReportReplyModalComponent implements OnChanges {
       next: (statuses) => this.statuses.set(statuses),
       error: () => {},
     });
+  }
+
+  private isValidEmail(value: string): boolean {
+    if (!value) {
+      return false;
+    }
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 }

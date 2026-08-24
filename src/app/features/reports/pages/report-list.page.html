@@ -17,9 +17,10 @@
           <label cLabel for="filter-priority">Priority</label>
           <select cSelect id="filter-priority" formControlName="priority" class="form-select">
             <option value="">All</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
+            <option value="LOW">Faible</option>
+            <option value="MEDIUM">Normale</option>
+            <option value="HIGH">Élevée</option>
+            <option value="CRITICAL">Critique</option>
           </select>
         </c-col>
         <c-col md="2">
@@ -29,6 +30,14 @@
             @for (status of statuses(); track status.statusId) {
               <option [value]="status.statusId">{{ status.label }}</option>
             }
+          </select>
+        </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-replied">Réponse</label>
+          <select cSelect id="filter-replied" formControlName="replied" class="form-select">
+            <option value="">Toutes</option>
+            <option value="true">Répondu</option>
+            <option value="false">Non répondu</option>
           </select>
         </c-col>
         <c-col md="2" class="d-flex gap-2">
@@ -56,6 +65,7 @@
               <th>Transport</th>
               <th>Passenger</th>
               <th>Status</th>
+              <th>Réponse</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
@@ -66,21 +76,39 @@
                 <td>{{ r.reference }}</td>
                 <td>{{ r.reportTypeLabel }}</td>
                 <td>
-                  <c-badge [color]="r.priority === 'HIGH' ? 'danger' : r.priority === 'MEDIUM' ? 'warning' : 'secondary'">
-                    {{ r.priority }}
+                  <c-badge [color]="priorityBadge(r.priority)">
+                    {{ priorityLabel(r.priority) }}
                   </c-badge>
                 </td>
                 <td>{{ r.transportSupport?.label }}</td>
                 <td>{{ r.passenger?.name }}</td>
                 <td>{{ r.status?.label }}</td>
+                <td>
+                  @if (r.replied) {
+                    <c-badge color="success">Répondu</c-badge>
+                  } @else {
+                    <c-badge color="secondary">Non répondu</c-badge>
+                  }
+                </td>
                 <td class="text-end text-nowrap">
                   <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openView(r.reportId)">Consulter</button>
-                  <button cButton color="primary" variant="outline" size="sm" class="me-1" type="button" (click)="reply(r)">Répondre</button>
+                  <button
+                    *appHasPermission="'REPORT_REPLY'"
+                    cButton
+                    color="primary"
+                    variant="outline"
+                    size="sm"
+                    class="me-1"
+                    type="button"
+                    (click)="reply(r)"
+                  >
+                    Répondre
+                  </button>
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="8" class="text-center text-body-secondary py-4">No reports found.</td>
+                <td colspan="9" class="text-center text-body-secondary py-4">No reports found.</td>
               </tr>
             }
           </tbody>
@@ -101,11 +129,15 @@
   </c-card-body>
 </c-card>
 
-<app-report-detail-modal [visible]="detailVisible()" [reportId]="currentReportId()" (visibleChange)="detailVisible.set($event)"></app-report-detail-modal>
+<app-report-detail-modal
+  [visible]="detailVisible()"
+  [reportId]="currentReportId()"
+  (visibleChange)="detailVisible.set($event)"
+  (updated)="load()"
+></app-report-detail-modal>
 <app-report-reply-modal
   [visible]="replyVisible()"
   [report]="currentReport()"
-  [userId]="currentUserId"
   (visibleChange)="replyVisible.set($event)"
   (replied)="load()"
 ></app-report-reply-modal>

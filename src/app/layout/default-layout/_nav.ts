@@ -26,6 +26,11 @@ export const navItems: INavData[] = [
     iconComponent: { name: 'cil-list' },
   },
   {
+    name: 'Types de réclamation',
+    url: '/reclamation-types',
+    iconComponent: { name: 'cil-list' },
+  },
+  {
     name: 'Report types',
     url: '/report-types',
     iconComponent: { name: 'cil-speech' },
@@ -39,5 +44,20 @@ export const navItems: INavData[] = [
     name: 'Reports',
     url: '/reports',
     iconComponent: { name: 'cilList' },
-  }
+  },
+  {
+    name: 'Voyageurs',
+    url: '/passengers',
+    iconComponent: { name: 'cilPeople' },
+  },
+  {
+    name: 'Rapports & Statistiques',
+    url: '/statistics',
+    iconComponent: { name: 'cilChart' },
+  },
+  {
+    name: "Journal d'audit",
+    url: '/audit-logs',
+    iconComponent: { name: 'cilHistory' },
+  },
 ];

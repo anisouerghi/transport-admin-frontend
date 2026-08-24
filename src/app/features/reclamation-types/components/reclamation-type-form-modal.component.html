@@ -1,0 +1,20 @@
+<c-modal alignment="center" [visible]="visible" (visibleChange)="onVisibleChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isEdit ? 'Modifier le type de réclamation' : 'Ajouter un type de réclamation' }}</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()" [validated]="submitted()" id="reclamationTypeForm">
+      <label cLabel for="reclamation-code">Code</label>
+      <input cFormControl id="reclamation-code" formControlName="code" [valid]="fieldTouchedValid('code')" />
+      @if (fieldInvalid('code')) { <div class="invalid-feedback d-block">Le code est obligatoire (50 caractères maximum).</div> }
+      <label cLabel for="reclamation-label" class="mt-3">Libellé</label>
+      <input cFormControl id="reclamation-label" formControlName="label" [valid]="fieldTouchedValid('label')" />
+      @if (fieldInvalid('label')) { <div class="invalid-feedback d-block">Le libellé est obligatoire (150 caractères maximum).</div> }
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Annuler</button>
+    <button cButton color="primary" type="submit" form="reclamationTypeForm" [disabled]="saving()">{{ saving() ? 'Enregistrement...' : 'Enregistrer' }}</button>
+  </c-modal-footer>
+</c-modal>

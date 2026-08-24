@@ -1,0 +1,67 @@
+<c-card class="mb-4">
+  <c-card-header class="d-flex justify-content-between align-items-center">
+    <strong>Rôles</strong>
+    <button *appHasPermission="'ROLE_ADD'" cButton color="primary" type="button" (click)="openCreate()">Nouveau rôle</button>
+  </c-card-header>
+  <c-card-body>
+    @if (loading()) {
+      <div class="text-center py-5"><c-spinner></c-spinner></div>
+    } @else {
+      <div class="table-responsive">
+        <table cTable hover striped align="middle" class="mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Code</th>
+              <th>Libellé</th>
+              <th>Permissions</th>
+              <th>Actif</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items(); track item.roleId) {
+              <tr>
+                <td>{{ item.roleId }}</td>
+                <td>{{ item.code }}</td>
+                <td>{{ item.label }}</td>
+                <td>
+                  <span class="text-body-secondary">{{ item.permissions.length || 0 }} permission(s)</span>
+                </td>
+                <td>
+                  <c-badge [color]="item.active ? 'success' : 'secondary'">
+                    {{ item.active ? 'Oui' : 'Non' }}
+                  </c-badge>
+                </td>
+                <td class="text-end text-nowrap">
+                  <button *appHasPermission="'ROLE_EDIT'" cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openEdit(item)">Modifier</button>
+                  <button *appHasPermission="'ROLE_DELETE'" cButton color="danger" variant="outline" size="sm" type="button" (click)="askDelete(item)">Supprimer</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="text-center text-body-secondary py-4">Aucun rôle.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </c-card-body>
+</c-card>
+
+<app-role-form-modal
+  [visible]="formVisible()"
+  [item]="editing()"
+  (visibleChange)="formVisible.set($event)"
+  (saved)="load()"
+/>
+
+<app-confirm-modal
+  [visible]="confirmVisible()"
+  title="Supprimer le rôle"
+  [message]="'Supprimer le rôle « ' + (confirmItem()?.code ?? '') + ' » ?'"
+  confirmLabel="Supprimer"
+  confirmColor="danger"
+  [busy]="actionBusy()"
+  (visibleChange)="confirmVisible.set($event)"
+  (confirm)="onConfirmDelete()"
+/>

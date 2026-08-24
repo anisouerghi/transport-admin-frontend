@@ -1,0 +1,44 @@
+<c-card class="mb-4">
+  <c-card-header class="d-flex justify-content-between align-items-center">
+    <strong>Types de réclamation</strong>
+    <button *appHasPermission="'RECLAMATION_TYPE_ADD'" cButton color="primary" type="button" (click)="openCreate()">
+      <svg cIcon name="cilPlus" class="me-1"></svg>
+      Ajouter
+    </button>
+  </c-card-header>
+  <c-card-body>
+    @if (loading()) {
+      <div class="text-center py-5"><c-spinner></c-spinner></div>
+    } @else {
+      <div class="table-responsive">
+        <table cTable hover striped align="middle" class="mb-0">
+          <thead><tr><th>ID</th><th>Code</th><th>Libellé</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            @for (item of items(); track item.reclamationTypeId) {
+              <tr>
+                <td>{{ item.reclamationTypeId }}</td><td>{{ item.code }}</td><td>{{ item.label }}</td>
+                <td class="text-end text-nowrap">
+                  <button *appHasPermission="'RECLAMATION_TYPE_EDIT'" cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openEdit(item)">Modifier</button>
+                  <button *appHasPermission="'RECLAMATION_TYPE_DELETE'" cButton color="danger" variant="outline" size="sm" type="button" (click)="askDelete(item)">Supprimer</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4" class="text-center text-body-secondary py-4">Aucun type de réclamation.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </c-card-body>
+</c-card>
+
+<app-reclamation-type-form-modal
+  [visible]="formModalVisible()" [item]="editingItem()"
+  (visibleChange)="formModalVisible.set($event)" (saved)="load()"
+/>
+<app-confirm-modal
+  [visible]="confirmVisible()" title="Supprimer le type de réclamation"
+  [message]="'Supprimer le type « ' + (confirmItem()?.code ?? '') + ' » ?'"
+  confirmLabel="Supprimer" confirmColor="danger" [busy]="actionBusy()"
+  (visibleChange)="confirmVisible.set($event)" (confirm)="onConfirmDelete()"
+/>

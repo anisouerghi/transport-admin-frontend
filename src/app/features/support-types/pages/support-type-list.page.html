@@ -1,7 +1,7 @@
 <c-card class="mb-4">
   <c-card-header class="d-flex justify-content-between align-items-center">
     <strong>Support types</strong>
-    <button cButton color="primary" type="button" (click)="openCreate()">
+    <button *appHasPermission="'SUPPORT_TYPE_ADD'" cButton color="primary" type="button" (click)="openCreate()">
       <svg cIcon name="cilPlus" class="me-1"></svg>
       Add support type
     </button>
@@ -44,8 +44,8 @@
                 <td>{{ item.code }}</td>
                 <td>{{ item.label }}</td>
                 <td class="text-end text-nowrap">
-                  <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openEdit(item)">Edit</button>
-                  <button cButton color="danger" variant="outline" size="sm" type="button" (click)="askDelete(item)">Delete</button>
+                  <button *appHasPermission="'SUPPORT_TYPE_EDIT'" cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openEdit(item)">Edit</button>
+                  <button *appHasPermission="'SUPPORT_TYPE_DELETE'" cButton color="danger" variant="outline" size="sm" type="button" (click)="askDelete(item)">Delete</button>
                 </td>
               </tr>
             } @empty {

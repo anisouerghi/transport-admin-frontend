@@ -15,6 +15,8 @@ import {
   RowComponent,
 } from '@coreui/angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { RolesService } from '../../roles/services/roles.service';
+import { Role } from '../../roles/models/role.model';
 import { User, UserRequest } from '../models/user.model';
 import { UsersService } from '../services/users.service';
 
@@ -40,6 +42,7 @@ import { UsersService } from '../services/users.service';
 })
 export class UserFormModalComponent implements OnChanges {
   private readonly usersService = inject(UsersService);
+  private readonly rolesService = inject(RolesService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
 
@@ -50,6 +53,8 @@ export class UserFormModalComponent implements OnChanges {
 
   readonly saving = signal(false);
   readonly submitted = signal(false);
+  readonly roles = signal<Role[]>([]);
+  readonly selectedRoleIds = signal<Set<number>>(new Set());
 
   readonly form = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.maxLength(100)]],
@@ -65,6 +70,9 @@ export class UserFormModalComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] || changes['user']) {
       this.submitted.set(false);
+      if (this.visible) {
+        this.loadRoles();
+      }
       if (this.user) {
         this.form.reset({
           username: this.user.username,
@@ -80,9 +88,21 @@ export class UserFormModalComponent implements OnChanges {
           Validators.minLength(8),
           Validators.maxLength(100),
         ]);
+        this.selectedRoleIds.set(new Set());
       }
       this.form.controls.password.updateValueAndValidity();
     }
+  }
+
+  toggleRole(id: number, checked: boolean): void {
+    const next = new Set(this.selectedRoleIds());
+    if (checked) next.add(id);
+    else next.delete(id);
+    this.selectedRoleIds.set(next);
+  }
+
+  isRoleChecked(id: number): boolean {
+    return this.selectedRoleIds().has(id);
   }
 
   close(): void {
@@ -105,6 +125,7 @@ export class UserFormModalComponent implements OnChanges {
       username: raw.username,
       name: raw.name,
       email: raw.email,
+      roleIds: [...this.selectedRoleIds()],
     };
     if (raw.password.trim()) {
       payload.password = raw.password;
@@ -138,5 +159,21 @@ export class UserFormModalComponent implements OnChanges {
       return undefined;
     }
     return control.valid;
+  }
+
+  private loadRoles(): void {
+    this.rolesService.getAll().subscribe({
+      next: (roles) => {
+        this.roles.set(roles);
+        if (this.user?.roles?.length) {
+          const ids = roles
+            .filter((r) => this.user!.roles!.includes(r.code))
+            .map((r) => r.roleId);
+          this.selectedRoleIds.set(new Set(ids));
+        } else if (!this.user) {
+          this.selectedRoleIds.set(new Set());
+        }
+      },
+    });
   }
 }

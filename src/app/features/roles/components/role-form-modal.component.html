@@ -1,0 +1,87 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="xl">
+  <c-modal-header>
+    <h5 cModalTitle>{{ item ? 'Modifier le rôle' : 'Nouveau rôle' }}</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()">
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label cLabel for="role-code">Code</label>
+          <input cFormControl id="role-code" formControlName="code" />
+        </div>
+        <div class="col-md-4">
+          <label cLabel for="role-label">Libellé</label>
+          <input cFormControl id="role-label" formControlName="label" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="role-active" formControlName="active" />
+            <label class="form-check-label" for="role-active">Actif</label>
+          </div>
+        </div>
+        <div class="col-12">
+          <label cLabel for="role-desc">Description</label>
+          <textarea cFormControl id="role-desc" formControlName="description" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong>Matrice des permissions</strong>
+        <small class="text-body-secondary">Cochez les actions autorisées par module</small>
+      </div>
+
+      @if (loadingMatrix()) {
+        <div class="text-center py-4"><c-spinner></c-spinner></div>
+      } @else if (matrix(); as mx) {
+        <div class="table-responsive border rounded" style="max-height: 420px; overflow: auto;">
+          <table cTable hover bordered small align="middle" class="mb-0 permission-matrix">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-nowrap">Module</th>
+                @for (action of mx.actions; track action) {
+                  <th class="text-center text-nowrap" style="min-width: 72px;">{{ action }}</th>
+                }
+                <th class="text-center">Tous</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (mod of mx.modules; track mod.moduleCode) {
+                <tr>
+                  <td class="fw-semibold text-nowrap">{{ mod.moduleLabel }}</td>
+                  @for (action of mx.actions; track action) {
+                    <td class="text-center">
+                      @if (cell(mod.moduleCode, action); as c) {
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          [title]="c.label"
+                          [checked]="isChecked(c.permissionId)"
+                          (change)="togglePermission(c.permissionId, $any($event.target).checked)"
+                        />
+                      } @else {
+                        <span class="text-body-tertiary">—</span>
+                      }
+                    </td>
+                  }
+                  <td class="text-center">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      title="Tout cocher / décocher"
+                      (change)="toggleModuleRow(mod.moduleCode, $any($event.target).checked)"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Annuler</button>
+    <button cButton color="primary" type="button" [disabled]="saving()" (click)="submit()">Enregistrer</button>
+  </c-modal-footer>
+</c-modal>

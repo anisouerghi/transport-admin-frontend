@@ -19,6 +19,7 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { ReportDetailModalComponent } from '../components/report-detail-modal.component';
 import { ReportReplyModalComponent } from '../components/report-reply-modal.component';
 import { Report, ReportFilter, Status } from '../models/report.model';
@@ -45,6 +46,7 @@ import { ReportsService } from '../services/reports.service';
     PageLinkDirective,
     SpinnerComponent,
     BadgeComponent,
+    HasPermissionDirective,
     ReportDetailModalComponent,
     ReportReplyModalComponent,
   ],
@@ -67,13 +69,13 @@ export class ReportListPage implements OnInit {
   readonly replyVisible = signal(false);
   readonly currentReportId = signal<number | null>(null);
   readonly currentReport = signal<Report | null>(null);
-  readonly currentUserId = 1;
 
   readonly filterForm = this.fb.nonNullable.group({
     reference: '',
     reportTypeId: '' as string | number,
     priority: '',
     statusId: '' as string | number,
+    replied: '',
   });
 
   ngOnInit(): void {
@@ -91,6 +93,7 @@ export class ReportListPage implements OnInit {
       priority: raw.priority,
       reportTypeId: reportTypeId && reportTypeId > 0 ? reportTypeId : undefined,
       statusId: statusId && statusId > 0 ? statusId : undefined,
+      replied: raw.replied === '' ? undefined : raw.replied === 'true',
     };
     this.reportsService.getReports(this.page(), this.size, filter).subscribe({
       next: (res) => {
@@ -110,7 +113,7 @@ export class ReportListPage implements OnInit {
   }
 
   resetFilters(): void {
-    this.filterForm.reset({ reference: '', reportTypeId: '', priority: '', statusId: '' });
+    this.filterForm.reset({ reference: '', reportTypeId: '', priority: '', statusId: '', replied: '' });
     this.page.set(0);
     this.load();
   }
@@ -139,6 +142,31 @@ export class ReportListPage implements OnInit {
     this.currentReport.set(report);
     this.currentReportId.set(report.reportId);
     this.replyVisible.set(true);
+  }
+
+  priorityLabel(code?: string | null): string {
+    switch (code) {
+      case 'LOW':
+        return 'Faible';
+      case 'MEDIUM':
+        return 'Normale';
+      case 'HIGH':
+        return 'Élevée';
+      case 'CRITICAL':
+        return 'Critique';
+      default:
+        return code || '—';
+    }
+  }
+
+  priorityBadge(code?: string | null): string {
+    if (code === 'CRITICAL' || code === 'HIGH') {
+      return 'danger';
+    }
+    if (code === 'MEDIUM') {
+      return 'warning';
+    }
+    return 'secondary';
   }
 
   pages(): number[] {

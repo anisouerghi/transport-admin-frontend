@@ -58,14 +58,29 @@ export class TransportSupportsService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-  /** Force la regeneration de l'image QR. */
+  /** Force la regeneration de l'image QR pour un support unique. */
   regenerateQr(id: number): Observable<TransportSupport> {
     return this.http
       .post<ApiResponse<TransportSupport>>(`${this.baseUrl}/${id}/generate-qr`, {})
       .pipe(map((res) => res.data));
   }
 
-  /** URL directe de l'image PNG (pour balise &lt;img src&gt;). */
+  /** Regeneration globale des QR codes de tous les supports. */
+  regenerateAllQr(): Observable<TransportSupport[]> {
+    return this.http
+      .post<ApiResponse<TransportSupport[]>>(`${this.baseUrl}/generate-qr`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  /**
+   * Image PNG via HttpClient (avec JWT).
+   * Ne pas utiliser dans &lt;img src&gt; directement : la balise n'envoie pas le token.
+   */
+  getQrImageBlob(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/qr`, { responseType: 'blob' });
+  }
+
+  /** @deprecated Préférer {@link getQrImageBlob} pour l'affichage authentifié. */
   getQrImageUrl(id: number): string {
     return `${this.baseUrl}/${id}/qr`;
   }

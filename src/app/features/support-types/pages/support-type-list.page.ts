@@ -18,6 +18,7 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { NotificationService } from '../../../core/services/notification.service';
+import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal.component';
 import { SupportTypeFormModalComponent } from '../components/support-type-form-modal.component';
 import { SupportType, SupportTypeFilter } from '../models/support-type.model';
@@ -49,6 +50,7 @@ import { SupportTypesService } from '../services/support-types.service';
     PageLinkDirective,
     SpinnerComponent,
     IconDirective,
+    HasPermissionDirective,
     SupportTypeFormModalComponent,
     ConfirmModalComponent,
   ],

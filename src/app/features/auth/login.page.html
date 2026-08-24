@@ -1,0 +1,41 @@
+<div class="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+  <c-container>
+    <c-row class="justify-content-center">
+      <c-col md="5" lg="4">
+        <c-card>
+          <c-card-body class="p-4">
+            <h1 class="h4 mb-1">Administration</h1>
+            <p class="text-body-secondary mb-4">Connexion agents / administrateurs</p>
+
+            @if (error()) {
+              <div class="alert alert-danger py-2">{{ error() }}</div>
+            }
+
+            <form cForm [formGroup]="form" (ngSubmit)="submit()">
+              <div class="mb-3">
+                <label cLabel for="username">Identifiant</label>
+                <input cFormControl id="username" formControlName="username" autocomplete="username" />
+              </div>
+              <div class="mb-4">
+                <label cLabel for="password">Mot de passe</label>
+                <input
+                  cFormControl
+                  id="password"
+                  type="password"
+                  formControlName="password"
+                  autocomplete="current-password"
+                />
+              </div>
+              <button cButton color="primary" class="w-100" type="submit" [disabled]="busy()">
+                @if (busy()) {
+                  <c-spinner size="sm" class="me-2"></c-spinner>
+                }
+                Se connecter
+              </button>
+            </form>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>

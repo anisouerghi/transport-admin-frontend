@@ -1,57 +1,196 @@
-<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)">
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="lg">
   <c-modal-header>
-    <h5 cModalTitle>Reply to report</h5>
-    <button cButtonClose (click)="close()"></button>
+    <h5 cModalTitle>Traiter le signalement</h5>
+    <button cButtonClose (click)="close()" [disabled]="saving()"></button>
   </c-modal-header>
   <c-modal-body>
-    @if (!report) {
-      <div class="text-center py-4 text-body-secondary">No report selected.</div>
+    @if (!report && !detail()) {
+      <div class="text-center py-4 text-body-secondary">Aucun signalement sélectionné.</div>
+    } @else if (loadingReport()) {
+      <div class="text-center py-5"><c-spinner></c-spinner></div>
     } @else {
-      <div class="mb-3">
-        <strong>Reference:</strong> {{ report.reference }}
+      @let r = detail() ?? report!;
+
+      <div class="mb-3 d-flex flex-wrap justify-content-between gap-2 align-items-center">
+        <div>
+          <span class="text-body-secondary">Référence</span>
+          <div class="fw-semibold">{{ r.reference }}</div>
+        </div>
+        @if (r.status?.label) {
+          <c-badge color="info">{{ r.status?.label }}</c-badge>
+        }
       </div>
+
+      <!-- 1. Informations du voyageur -->
+      <section class="mb-4">
+        <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Informations du voyageur</h6>
+        @if (isAnonymous()) {
+          <div class="p-3 border rounded-2 bg-body-tertiary">
+            <c-badge color="secondary" class="me-2">Anonyme</c-badge>
+            <strong>Voyageur anonyme</strong>
+            <p class="mb-0 mt-2 small text-body-secondary">
+              Aucune identité n’a été renseignée lors du dépôt du signalement.
+            </p>
+          </div>
+        } @else {
+          <div class="p-3 border rounded-2">
+            <div class="mb-2">
+              <c-badge color="success">Authentifié</c-badge>
+            </div>
+            <dl class="row mb-0 gy-2">
+              <dt class="col-sm-4 text-body-secondary">Nom complet</dt>
+              <dd class="col-sm-8 mb-0">{{ r.passenger?.name || '—' }}</dd>
+              <dt class="col-sm-4 text-body-secondary">Adresse e-mail</dt>
+              <dd class="col-sm-8 mb-0">{{ r.passenger?.email || '—' }}</dd>
+              <dt class="col-sm-4 text-body-secondary">Téléphone</dt>
+              <dd class="col-sm-8 mb-0">{{ r.passenger?.phoneNumber || '—' }}</dd>
+            </dl>
+          </div>
+        }
+      </section>
+
       <form cForm [formGroup]="form" (ngSubmit)="submit()">
-        <c-row class="g-3">
-          <c-col xs="12">
-            <label cLabel for="reply-message">Message</label>
-            <textarea
-              cFormControl
-              id="reply-message"
-              formControlName="message"
-              rows="5"
-              class="form-control"
-              placeholder="Write your reply..."
-            ></textarea>
-          </c-col>
-          <c-col xs="12">
-            <label cLabel for="reply-status">Status</label>
-            <select cSelect id="reply-status" formControlName="statusId" class="form-select">
-              <option value="">Keep current</option>
-              @for (s of statuses(); track s.statusId) {
-                <option [value]="s.statusId">{{ s.label }}</option>
+        <!-- 2. Réponse de l'agent -->
+        <section class="mb-4">
+          <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Réponse de l'agent</h6>
+          <c-row class="g-3">
+            <c-col xs="12">
+              <label cLabel for="reply-message">Message *</label>
+              <textarea
+                cFormControl
+                id="reply-message"
+                formControlName="message"
+                rows="5"
+                class="form-control"
+                placeholder="Rédigez votre réponse au voyageur…"
+                [class.is-invalid]="submitted() && form.controls.message.invalid"
+              ></textarea>
+              @if (submitted() && form.controls.message.invalid) {
+                <div class="invalid-feedback d-block">Le message est obligatoire (max. 2000 caractères).</div>
               }
-            </select>
-          </c-col>
-          <c-col xs="12">
-            <div class="form-check">
-              <input cFormControl type="checkbox" id="reply-send-email" formControlName="sendEmail" class="form-check-input" />
-              <label class="form-check-label" for="reply-send-email">Envoyer email</label>
+            </c-col>
+            <c-col md="6">
+              <label cLabel for="reply-status">Statut</label>
+              <select cSelect id="reply-status" formControlName="statusId" class="form-select">
+                <option value="">Conserver le statut actuel</option>
+                @for (s of statuses(); track s.statusId) {
+                  <option [value]="s.statusId">{{ s.label }}</option>
+                }
+              </select>
+            </c-col>
+            <c-col md="6">
+              @if (canUpdatePriority()) {
+                <label cLabel for="reply-priority">Priorité (interne)</label>
+                <select cSelect id="reply-priority" formControlName="priority" class="form-select">
+                  @for (p of priorities; track p.value) {
+                    <option [value]="p.value">{{ p.label }}</option>
+                  }
+                </select>
+              } @else {
+                <label cLabel>Priorité (interne)</label>
+                <div class="form-control-plaintext">{{ r.priority || '—' }}</div>
+              }
+            </c-col>
+          </c-row>
+        </section>
+
+        <!-- 3. Options d'envoi et de visibilité -->
+        <section class="mb-2">
+          <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">
+            Options d'envoi et de visibilité
+          </h6>
+
+          @if (hasPassengerEmail()) {
+            <div class="p-3 border rounded-2 mb-3">
+              <div class="form-check">
+                <input
+                  cFormControl
+                  class="form-check-input"
+                  type="checkbox"
+                  id="reply-send-email"
+                  formControlName="sendEmail"
+                  [disabled]="!form.controls.publicResponse.value"
+                />
+                <label class="form-check-label" for="reply-send-email">
+                  Envoyer également cette réponse par e-mail
+                </label>
+              </div>
+              <p class="small text-body-secondary mb-2 mt-2">
+                Disponible uniquement si la réponse est visible à l'auteur. Un lien sécurisé (UUID)
+                sera inclus dans l'e-mail.
+              </p>
+              <div class="small">
+                <span class="text-body-secondary">Destinataire :</span>
+                <div class="fw-semibold">{{ passengerEmail() }}</div>
+                <p class="small text-body-secondary mb-0 mt-2">
+                  L'e-mail part vers cette adresse (pas celle de l'agent). Vérifiez aussi les
+                  indésirables.
+                </p>
+              </div>
             </div>
-          </c-col>
-          <c-col xs="12">
-            <div class="form-check">
-              <input cFormControl type="checkbox" id="reply-publish" formControlName="publish" class="form-check-input" />
-              <label class="form-check-label" for="reply-publish">Publier</label>
+          } @else {
+            <div class="alert alert-warning mb-3" role="status">
+              Aucun e-mail n'est renseigné. La réponse sera uniquement disponible dans le suivi du
+              signalement.
             </div>
-          </c-col>
-        </c-row>
+          }
+
+          <div class="p-3 border rounded-2 mb-3">
+            <div class="form-check">
+              <input
+                cFormControl
+                class="form-check-input"
+                type="checkbox"
+                id="reply-public-response"
+                formControlName="publicResponse"
+                (change)="onPublicResponseChange()"
+              />
+              <label class="form-check-label" for="reply-public-response">
+                Visible à l'auteur du signalement
+              </label>
+            </div>
+            <p class="small text-body-secondary mb-0 mt-2">
+              Si décochée, la réponse reste visible uniquement par les agents de l'administration et
+              n'apparaît pas dans l'espace de suivi du voyageur.
+            </p>
+          </div>
+
+          <div class="p-3 border rounded-2">
+            <div class="form-check">
+              <input
+                cFormControl
+                class="form-check-input"
+                type="checkbox"
+                id="reply-publish"
+                formControlName="publish"
+              />
+              <label class="form-check-label" for="reply-publish">Visible à l'accueil</label>
+            </div>
+            <p class="small text-body-secondary mb-0 mt-2">
+              Si cochée, le signalement / la réponse pourra apparaître sur l'espace d'accueil public.
+            </p>
+          </div>
+        </section>
       </form>
     }
   </c-modal-body>
   <c-modal-footer>
-    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Cancel</button>
-    <button cButton color="primary" type="button" (click)="submit()" [disabled]="saving()">
-      Save reply
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()" [disabled]="saving()">
+      Annuler
+    </button>
+    <button
+      cButton
+      color="primary"
+      type="button"
+      (click)="submit()"
+      [disabled]="saving() || loadingReport() || (!report && !detail())"
+    >
+      @if (saving()) {
+        <c-spinner size="sm" class="me-2"></c-spinner>
+        Envoi…
+      } @else {
+        Envoyer
+      }
     </button>
   </c-modal-footer>
 </c-modal>

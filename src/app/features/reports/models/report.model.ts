@@ -1,4 +1,11 @@
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | string;
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
+  { value: 'LOW', label: 'Faible' },
+  { value: 'MEDIUM', label: 'Normale' },
+  { value: 'HIGH', label: 'Élevée' },
+  { value: 'CRITICAL', label: 'Critique' },
+];
 
 export interface TransportSupport {
   transportSupportId: number;
@@ -13,6 +20,9 @@ export interface Passenger {
   email?: string;
   phoneNumber?: string;
   emailVerified?: boolean;
+  active?: boolean;
+  /** True si aucune identité renseignée (voyageur anonyme). */
+  anonymous?: boolean;
 }
 
 export interface Status {
@@ -20,6 +30,17 @@ export interface Status {
   code: string;
   label: string;
   displayOrder?: number;
+}
+
+/** Pièce jointe d'un signalement. */
+export interface ReportAttachment {
+  attachmentId: number;
+  uuid?: string;
+  fileName: string;
+  fileType?: string;
+  fileSize?: number | null;
+  reportId?: number;
+  image?: boolean;
 }
 
 export interface Report {
@@ -35,6 +56,9 @@ export interface Report {
   reportTypeLabel?: string;
   passenger?: Passenger | null;
   status?: Status | null;
+  /** true si au moins une réponse agent est enregistrée (backend). */
+  replied?: boolean;
+  attachments?: ReportAttachment[];
 }
 
 export interface ReportFilter {
@@ -51,21 +75,31 @@ export interface ReportFilter {
   closureDateTo?: string;
   reportType?: string;
   status?: string;
+  /** true = répondu ; false = non répondu ; omis = tous. */
+  replied?: boolean;
 }
 
 export interface ReportReplyRequest {
   message: string;
-  userId: number;
+  /** Optionnel : déduit du JWT côté backend. */
+  userId?: number;
   statusId?: number;
   sendEmail?: boolean;
   publish?: boolean;
+  publicResponse?: boolean;
 }
 
 export interface ReportReply {
   replyId: number;
   message: string;
   replyDate: string;
-  emailSent: boolean;
+  emailSent?: boolean;
+  publicResponse?: boolean;
+  publish?: boolean;
   reportId: number;
   userId: number;
+}
+
+export interface UpdatePriorityRequest {
+  priority: Priority;
 }
