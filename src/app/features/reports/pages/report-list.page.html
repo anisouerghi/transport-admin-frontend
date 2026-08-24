@@ -5,7 +5,7 @@
   <c-card-body>
     <form cForm [formGroup]="filterForm" (ngSubmit)="search()" class="mb-4">
       <c-row class="g-3 align-items-end">
-        <c-col md="3">
+        <c-col md="2">
           <label cLabel for="filter-reference">Reference</label>
           <input cFormControl id="filter-reference" formControlName="reference" placeholder="Search…" />
         </c-col>
@@ -40,6 +40,16 @@
             <option value="false">Non répondu</option>
           </select>
         </c-col>
+        <c-col md="2">
+          <label cLabel for="filter-nature">Nature</label>
+          <select cSelect id="filter-nature" formControlName="nature" class="form-select">
+            <option value="">Toutes</option>
+            <option value="uncategorized">Non classé</option>
+            @for (n of natures(); track n.reportNatureId) {
+              <option [value]="n.reportNatureId">{{ n.label }}</option>
+            }
+          </select>
+        </c-col>
         <c-col md="2" class="d-flex gap-2">
           <button cButton color="primary" type="submit">Filter</button>
           <button cButton color="secondary" variant="outline" type="button" (click)="resetFilters()">
@@ -61,6 +71,7 @@
               <th>ID</th>
               <th>Reference</th>
               <th>Type</th>
+              <th>Nature</th>
               <th>Priority</th>
               <th>Transport</th>
               <th>Passenger</th>
@@ -75,6 +86,9 @@
                 <td>{{ r.reportId }}</td>
                 <td>{{ r.reference }}</td>
                 <td>{{ r.reportTypeLabel }}</td>
+                <td>
+                  <c-badge [color]="natureBadge(r)">{{ natureLabel(r) }}</c-badge>
+                </td>
                 <td>
                   <c-badge [color]="priorityBadge(r.priority)">
                     {{ priorityLabel(r.priority) }}
@@ -104,11 +118,22 @@
                   >
                     Répondre
                   </button>
+                  <button
+                    *appHasPermission="'REPORT_ASSIGN_NATURE'"
+                    cButton
+                    color="secondary"
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    (click)="assignNature(r)"
+                  >
+                    Nature
+                  </button>
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="9" class="text-center text-body-secondary py-4">No reports found.</td>
+                <td colspan="10" class="text-center text-body-secondary py-4">No reports found.</td>
               </tr>
             }
           </tbody>
@@ -141,3 +166,9 @@
   (visibleChange)="replyVisible.set($event)"
   (replied)="load()"
 ></app-report-reply-modal>
+<app-report-assign-nature-modal
+  [visible]="natureVisible()"
+  [report]="currentReport()"
+  (visibleChange)="natureVisible.set($event)"
+  (assigned)="load()"
+></app-report-assign-nature-modal>

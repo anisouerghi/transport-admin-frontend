@@ -54,6 +54,9 @@ export interface Report {
   transportSupport?: TransportSupport | null;
   reportTypeCode?: string;
   reportTypeLabel?: string;
+  natureId?: number | null;
+  natureCode?: string | null;
+  natureLabel?: string | null;
   passenger?: Passenger | null;
   status?: Status | null;
   /** true si au moins une réponse agent est enregistrée (backend). */
@@ -77,6 +80,9 @@ export interface ReportFilter {
   status?: string;
   /** true = répondu ; false = non répondu ; omis = tous. */
   replied?: boolean;
+  natureId?: number;
+  /** true = signalements sans nature. */
+  uncategorized?: boolean;
 }
 
 export interface ReportReplyRequest {

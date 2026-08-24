@@ -63,6 +63,15 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'report-natures',
+        canActivate: [permissionGuard],
+        data: { permission: 'NATURE_VIEW', title: 'Natures des signalements' },
+        loadComponent: () =>
+          import('./features/report-natures/pages/report-nature-list.page').then(
+            (m) => m.ReportNatureListPage
+          ),
+      },
+      {
         path: 'transport-supports',
         canActivate: [permissionGuard],
         data: { permission: 'TRANSPORT_SUPPORT_VIEW' },

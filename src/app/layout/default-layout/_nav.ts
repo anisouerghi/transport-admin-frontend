@@ -26,6 +26,11 @@ export const navItems: INavData[] = [
     iconComponent: { name: 'cil-speech' },
   },
   {
+    name: 'Natures des signalements',
+    url: '/report-natures',
+    iconComponent: { name: 'cilTags' },
+  },
+  {
     name: 'Transport supports',
     url: '/transport-supports',
     iconComponent: { name: 'cilList' },

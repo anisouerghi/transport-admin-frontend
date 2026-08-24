@@ -69,6 +69,12 @@ export class ReportsService {
       .pipe(map((r) => r.data));
   }
 
+  updateNature(reportId: number, reportNatureId: number | null): Observable<Report> {
+    return this.http
+      .patch<ApiResponse<Report>>(`${this.baseUrl}/${reportId}/nature`, { reportNatureId })
+      .pipe(map((r) => r.data));
+  }
+
   /** Liste des pièces jointes d'un signalement. */
   getAttachments(reportId: number): Observable<ReportAttachment[]> {
     return this.http

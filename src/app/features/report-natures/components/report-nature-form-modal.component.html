@@ -1,0 +1,45 @@
+<c-modal alignment="center" [visible]="visible" (visibleChange)="onVisibleChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>{{ isEdit ? 'Modifier la nature' : 'Ajouter une nature' }}</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()" [validated]="submitted()" id="reportNatureForm">
+      <c-row class="g-3">
+        <c-col md="6">
+          <label cLabel for="nature-code">Code</label>
+          <input cFormControl id="nature-code" formControlName="code" [valid]="fieldTouchedValid('code')" />
+          @if (fieldInvalid('code')) {
+            <div class="invalid-feedback d-block">Code obligatoire (max 50).</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="nature-label">Libellé</label>
+          <input cFormControl id="nature-label" formControlName="label" [valid]="fieldTouchedValid('label')" />
+          @if (fieldInvalid('label')) {
+            <div class="invalid-feedback d-block">Libellé obligatoire (max 150).</div>
+          }
+        </c-col>
+        <c-col cols="12">
+          <label cLabel for="nature-description">Description</label>
+          <textarea
+            cFormControl
+            id="nature-description"
+            formControlName="description"
+            rows="3"
+            [valid]="fieldTouchedValid('description')"
+          ></textarea>
+          @if (fieldInvalid('description')) {
+            <div class="invalid-feedback d-block">Description max 500 caractères.</div>
+          }
+        </c-col>
+      </c-row>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Annuler</button>
+    <button cButton color="primary" type="submit" form="reportNatureForm" [disabled]="saving()">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

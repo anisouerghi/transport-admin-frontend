@@ -18,8 +18,10 @@ import {
   SpinnerComponent,
   TableDirective,
 } from '@coreui/angular';
-import { NotificationService } from '../../../core/services/notification.service';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
+import { ReportNature } from '../../report-natures/models/report-nature.model';
+import { ReportNaturesService } from '../../report-natures/services/report-natures.service';
+import { ReportAssignNatureModalComponent } from '../components/report-assign-nature-modal.component';
 import { ReportDetailModalComponent } from '../components/report-detail-modal.component';
 import { ReportReplyModalComponent } from '../components/report-reply-modal.component';
 import { Report, ReportFilter, Status } from '../models/report.model';
@@ -49,17 +51,19 @@ import { ReportsService } from '../services/reports.service';
     HasPermissionDirective,
     ReportDetailModalComponent,
     ReportReplyModalComponent,
+    ReportAssignNatureModalComponent,
   ],
   templateUrl: './report-list.page.html',
 })
 export class ReportListPage implements OnInit {
   private readonly reportsService = inject(ReportsService);
-  private readonly notifications = inject(NotificationService);
+  private readonly naturesService = inject(ReportNaturesService);
   private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(false);
   readonly reports = signal<Report[]>([]);
   readonly statuses = signal<Status[]>([]);
+  readonly natures = signal<ReportNature[]>([]);
   readonly totalElements = signal(0);
   readonly totalPages = signal(1);
   readonly page = signal(0);
@@ -67,6 +71,7 @@ export class ReportListPage implements OnInit {
 
   readonly detailVisible = signal(false);
   readonly replyVisible = signal(false);
+  readonly natureVisible = signal(false);
   readonly currentReportId = signal<number | null>(null);
   readonly currentReport = signal<Report | null>(null);
 
@@ -76,10 +81,12 @@ export class ReportListPage implements OnInit {
     priority: '',
     statusId: '' as string | number,
     replied: '',
+    nature: '',
   });
 
   ngOnInit(): void {
     this.loadStatuses();
+    this.loadNatures();
     this.load();
   }
 
@@ -95,6 +102,14 @@ export class ReportListPage implements OnInit {
       statusId: statusId && statusId > 0 ? statusId : undefined,
       replied: raw.replied === '' ? undefined : raw.replied === 'true',
     };
+    if (raw.nature === 'uncategorized') {
+      filter.uncategorized = true;
+    } else if (raw.nature !== '') {
+      const natureId = Number(raw.nature);
+      if (natureId > 0) {
+        filter.natureId = natureId;
+      }
+    }
     this.reportsService.getReports(this.page(), this.size, filter).subscribe({
       next: (res) => {
         this.reports.set(res.content);
@@ -113,7 +128,14 @@ export class ReportListPage implements OnInit {
   }
 
   resetFilters(): void {
-    this.filterForm.reset({ reference: '', reportTypeId: '', priority: '', statusId: '', replied: '' });
+    this.filterForm.reset({
+      reference: '',
+      reportTypeId: '',
+      priority: '',
+      statusId: '',
+      replied: '',
+      nature: '',
+    });
     this.page.set(0);
     this.load();
   }
@@ -121,6 +143,13 @@ export class ReportListPage implements OnInit {
   private loadStatuses(): void {
     this.reportsService.getStatuses().subscribe({
       next: (statuses) => this.statuses.set(statuses),
+      error: () => {},
+    });
+  }
+
+  private loadNatures(): void {
+    this.naturesService.getActive().subscribe({
+      next: (items) => this.natures.set(items),
       error: () => {},
     });
   }
@@ -142,6 +171,20 @@ export class ReportListPage implements OnInit {
     this.currentReport.set(report);
     this.currentReportId.set(report.reportId);
     this.replyVisible.set(true);
+  }
+
+  assignNature(report: Report): void {
+    this.currentReport.set(report);
+    this.currentReportId.set(report.reportId);
+    this.natureVisible.set(true);
+  }
+
+  natureLabel(report: Report): string {
+    return report.natureLabel || 'Non classé';
+  }
+
+  natureBadge(report: Report): string {
+    return report.natureId ? 'info' : 'secondary';
   }
 
   priorityLabel(code?: string | null): string {

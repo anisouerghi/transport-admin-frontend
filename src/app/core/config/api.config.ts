@@ -11,6 +11,7 @@ export const API_CONFIG = {
     supportTypes: `${Config.API_LINK}/api/admin/support-types`,
     districts: `${Config.API_LINK}/api/admin/districts`,
     reportTypes: `${Config.API_LINK}/api/admin/report-types`,
+    natures: `${Config.API_LINK}/api/admin/natures`,
     transportSupports: `${Config.API_LINK}/api/admin/transport-supports`,
     signalements: `${Config.API_LINK}/api/admin/signalements`,
     reports: `${Config.API_LINK}/api/admin/reports`,

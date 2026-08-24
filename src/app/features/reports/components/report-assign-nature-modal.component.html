@@ -1,0 +1,30 @@
+<c-modal alignment="center" [visible]="visible" (visibleChange)="onVisibleChange($event)">
+  <c-modal-header>
+    <h5 cModalTitle>Affecter une nature</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <p class="mb-3">
+      Signalement :
+      <strong>{{ report?.reference || '—' }}</strong>
+    </p>
+    <form cForm [formGroup]="form" (ngSubmit)="submit()" id="assignNatureForm">
+      <label cLabel for="assign-nature">Nature *</label>
+      <select cSelect id="assign-nature" formControlName="reportNatureId" class="form-select">
+        <option value="">Sélectionner une nature</option>
+        @for (n of natures(); track n.reportNatureId) {
+          <option [value]="n.reportNatureId">{{ n.label }}</option>
+        }
+      </select>
+      @if (submitted() && form.controls.reportNatureId.invalid) {
+        <div class="invalid-feedback d-block">Veuillez sélectionner une nature.</div>
+      }
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" (click)="close()">Annuler</button>
+    <button cButton color="primary" type="submit" form="assignNatureForm" [disabled]="saving()">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
+  </c-modal-footer>
+</c-modal>
