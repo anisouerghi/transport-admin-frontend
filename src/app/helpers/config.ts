@@ -11,7 +11,7 @@ export class Config {
   }
 
   public static get API_LINK(): string {
-    // return 'http://10.0.2.2:8080';
-     return 'http://localhost:8080';
+    // Admin API Boot (migration 2 JAR) — ne plus pointer vers transport-api:8080
+    return 'http://localhost:8082';
   }
 }
