@@ -13,6 +13,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      if (req.url.includes('/assets/config/config.json')) {
+        return throwError(() => error);
+      }
       if (error.status === 401 && !req.url.includes('/api/auth/login')) {
         auth.logout(false);
         void router.navigate(['/login']);

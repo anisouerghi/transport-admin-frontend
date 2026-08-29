@@ -28,6 +28,22 @@ npm install
 npm run build
 ```
 
+### Déploiement sous un sous-répertoire (ex. `/admin/`)
+
+```bash
+npm run build -- --base-href /admin/
+```
+
+La configuration runtime (`apiBaseUrl`, `locale`, `rtl`) est dans `assets/config/config.json`, modifiable après déploiement sans rebuild.
+
+| Environnement | Fichier source | `apiBaseUrl` typique |
+|---------------|----------------|----------------------|
+| DEV | `src/assets/config/development/config.json` | `""` (proxy → `:8082`) |
+| PROD (build) | `src/assets/config/production/config.json` | URL absolue de l'API |
+
+Documentation complète :
+[transport-api/documentation/frontend-runtime-config-deployment.md](../transport-api/documentation/frontend-runtime-config-deployment.md)
+
 ## Docker (développement)
 
 Le service `admin-frontend` du `docker-compose` exécute **`npm install && npm run start:docker`** (`ng serve` sur le port 4200, rechargement à chaud).
@@ -54,6 +70,7 @@ Le `Dockerfile` (prod) fait `npm run build` puis sert les fichiers via nginx.
 |---------|------|
 | `src/app/layout/default-layout/_nav.ts` | Menu latéral |
 | `src/app/app.routes.ts` | Routes |
-| `src/environments/` | URL API (`/api` proxifié par `ng serve` ou nginx) |
+| `src/assets/config/config.json` | Config runtime (DEV) ; prod via build + édition post-déploiement |
+| `src/app/core/config/config.service.ts` | Chargement de `config.json` au démarrage |
 
 Documentation composants : [CoreUI Angular Docs](https://coreui.io/angular/docs/)

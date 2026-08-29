@@ -1,5 +1,5 @@
 {
-  "apiBaseUrl": "http://10.0.80.1:8082",
+  "apiBaseUrl": "http://192.168.1.55:8082",
   "locale": "en",
   "rtl": false
 }
