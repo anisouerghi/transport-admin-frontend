@@ -65,7 +65,6 @@ export class ReportListPage implements OnInit {
   readonly page = signal(0);
   readonly size = 10;
 
-  readonly detailVisible = signal(false);
   readonly replyVisible = signal(false);
   readonly currentReportId = signal<number | null>(null);
   readonly currentReport = signal<Report | null>(null);
@@ -131,11 +130,6 @@ export class ReportListPage implements OnInit {
     }
     this.page.set(page);
     this.load();
-  }
-
-  openView(reportId: number): void {
-    this.currentReportId.set(reportId);
-    this.detailVisible.set(true);
   }
 
   reply(report: Report): void {

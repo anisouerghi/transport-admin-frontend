@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   BadgeComponent,
@@ -19,13 +20,14 @@ import {
 } from '@coreui/angular';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { PRIORITY_OPTIONS, Priority, ReportReplyRequest, Report, Status } from '../models/report.model';
+import { PRIORITY_OPTIONS, Priority, ReportReplyRequest, Report, ReportAttachment, Status } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
 @Component({
   selector: 'app-report-reply-modal',
   standalone: true,
   imports: [
+    DatePipe,
     ReactiveFormsModule,
     ModalComponent,
     ModalHeaderComponent,
@@ -62,6 +64,9 @@ export class ReportReplyModalComponent implements OnChanges {
   readonly statuses = signal<Status[]>([]);
   /** Signalement enrichi (détail API) pour infos voyageur complètes. */
   readonly detail = signal<Report | null>(null);
+  readonly attachments = signal<ReportAttachment[]>([]);
+  readonly previewUrls = signal<Record<number, string>>({});
+  readonly downloadingId = signal<number | null>(null);
   readonly priorities = PRIORITY_OPTIONS;
   readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
 
@@ -78,6 +83,8 @@ export class ReportReplyModalComponent implements OnChanges {
     this.submitted.set(false);
     if (!this.visible) {
       this.detail.set(null);
+      this.clearPreviews();
+      this.attachments.set([]);
       this.form.reset({
         message: '',
         statusId: '',
@@ -212,7 +219,7 @@ export class ReportReplyModalComponent implements OnChanges {
           publicResponse: true,
           publish: false,
         });
-        this.loadingReport.set(false);
+        this.loadExistingRepliesAndAttachments(reportId);
       },
       error: () => {
         // Fallback sur le report de la liste
@@ -226,7 +233,106 @@ export class ReportReplyModalComponent implements OnChanges {
           publicResponse: true,
           publish: false,
         });
+        if (fallback) {
+          this.loadExistingRepliesAndAttachments(fallback.reportId);
+        } else {
+          this.loadingReport.set(false);
+        }
+      },
+    });
+  }
+
+  private loadExistingRepliesAndAttachments(reportId: number): void {
+    this.reportsService.getReplies(reportId).subscribe({
+      next: (replies) => {
+        if (replies && replies.length > 0) {
+          const lastReply = replies[replies.length - 1];
+          this.form.patchValue({
+            message: lastReply.message || '',
+            publicResponse: lastReply.publicResponse ?? true,
+            publish: lastReply.publish ?? false,
+          });
+        }
+      },
+      error: () => {},
+    });
+
+    this.reportsService.getAttachments(reportId).subscribe({
+      next: (atts) => {
+        this.attachments.set(atts);
+        this.loadImagePreviews(atts);
         this.loadingReport.set(false);
+      },
+      error: () => {
+        this.attachments.set([]);
+        this.loadingReport.set(false);
+      },
+    });
+  }
+
+  private loadImagePreviews(items: ReportAttachment[]): void {
+    this.clearPreviews();
+    for (const att of items) {
+      if (!att.image) {
+        continue;
+      }
+      this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          this.previewUrls.update((map) => ({ ...map, [att.attachmentId]: url }));
+        },
+      });
+    }
+  }
+
+  private clearPreviews(): void {
+    const urls = Object.values(this.previewUrls());
+    for (const url of urls) {
+      URL.revokeObjectURL(url);
+    }
+    this.previewUrls.set({});
+  }
+
+  isPdf(att: ReportAttachment): boolean {
+    return (att.fileType ?? '').toLowerCase().includes('pdf')
+      || (att.fileName ?? '').toLowerCase().endsWith('.pdf');
+  }
+
+  formatSize(bytes?: number | null): string {
+    if (bytes == null || bytes < 0) {
+      return '—';
+    }
+    if (bytes < 1024) {
+      return `${bytes} o`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} Ko`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+  }
+
+  downloadAttachment(att: ReportAttachment): void {
+    this.downloadingId.set(att.attachmentId);
+    this.reportsService.downloadAttachmentBlob(att.attachmentId).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = att.fileName || `attachment-${att.attachmentId}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.downloadingId.set(null);
+      },
+      error: () => this.downloadingId.set(null),
+    });
+  }
+
+  viewAttachment(att: ReportAttachment): void {
+    this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener');
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
       },
     });
   }

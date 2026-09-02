@@ -91,7 +91,6 @@
                   }
                 </td>
                 <td class="text-end text-nowrap">
-                  <button cButton color="info" variant="outline" size="sm" class="me-1" type="button" (click)="openView(r.reportId)">Consulter</button>
                   <button
                     *appHasPermission="'REPORT_REPLY'"
                     cButton
@@ -102,7 +101,7 @@
                     type="button"
                     (click)="reply(r)"
                   >
-                    Répondre
+                    Éditer
                   </button>
                 </td>
               </tr>
@@ -129,12 +128,6 @@
   </c-card-body>
 </c-card>
 
-<app-report-detail-modal
-  [visible]="detailVisible()"
-  [reportId]="currentReportId()"
-  (visibleChange)="detailVisible.set($event)"
-  (updated)="load()"
-></app-report-detail-modal>
 <app-report-reply-modal
   [visible]="replyVisible()"
   [report]="currentReport()"

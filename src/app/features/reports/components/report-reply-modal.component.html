@@ -21,7 +21,90 @@
         }
       </div>
 
-      <!-- 1. Informations du voyageur -->
+      <!-- 1. Détails du signalement -->
+      <section class="mb-4">
+        <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Détails du signalement</h6>
+        <div class="p-3 border rounded-2">
+          <dl class="row mb-0 gy-2">
+            <dt class="col-sm-4 text-body-secondary">Type</dt>
+            <dd class="col-sm-8 mb-0">{{ r.reportTypeLabel || '—' }}</dd>
+            @if (r.transportSupport?.label) {
+              <dt class="col-sm-4 text-body-secondary">Support de transport</dt>
+              <dd class="col-sm-8 mb-0">{{ r.transportSupport?.label }}</dd>
+            }
+            <dt class="col-sm-4 text-body-secondary">Date de création</dt>
+            <dd class="col-sm-8 mb-0">{{ r.creationDate | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            <dt class="col-sm-4 text-body-secondary">Description</dt>
+            <dd class="col-sm-8 mb-0" style="white-space: pre-wrap;">{{ r.description || '—' }}</dd>
+          </dl>
+
+          <hr />
+          <div class="fw-semibold mb-2">Pièces jointes</div>
+          @if (attachments().length > 0) {
+            <div class="d-flex flex-column gap-2">
+              @for (att of attachments(); track att.attachmentId) {
+                <div class="d-flex flex-wrap align-items-center gap-3 p-3 border rounded-2 bg-body-tertiary">
+                  <div class="flex-shrink-0" style="width: 48px; height: 48px">
+                    @if (previewUrls()[att.attachmentId]; as preview) {
+                      <img
+                        [src]="preview"
+                        [alt]="att.fileName"
+                        class="border rounded"
+                        style="width: 48px; height: 48px; object-fit: cover; cursor: pointer"
+                        (click)="viewAttachment(att)"
+                      />
+                    } @else if (isPdf(att)) {
+                      <div
+                        class="border rounded d-flex align-items-center justify-content-center bg-white text-danger fw-semibold"
+                        style="width: 48px; height: 48px; font-size: 0.65rem"
+                        (click)="viewAttachment(att)"
+                        role="button"
+                      >
+                        PDF
+                      </div>
+                    } @else {
+                      <div
+                        class="border rounded d-flex align-items-center justify-content-center bg-white text-body-secondary"
+                        style="width: 48px; height: 48px; font-size: 0.6rem"
+                        (click)="viewAttachment(att)"
+                        role="button"
+                      >
+                        Fichier
+                      </div>
+                    }
+                  </div>
+                  <div class="flex-grow-1" style="min-width: 10rem">
+                    <div class="small fw-semibold text-break">{{ att.fileName }}</div>
+                    <div class="small text-body-secondary">
+                      {{ formatSize(att.fileSize) }}
+                    </div>
+                  </div>
+                  <div class="d-flex gap-1">
+                    <button cButton color="info" variant="outline" size="sm" type="button" (click)="viewAttachment(att)">
+                      Voir
+                    </button>
+                    <button
+                      cButton
+                      color="primary"
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      [disabled]="downloadingId() === att.attachmentId"
+                      (click)="downloadAttachment(att)"
+                    >
+                      {{ downloadingId() === att.attachmentId ? '…' : 'Télécharger' }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-body-secondary small py-2">Aucune pièce jointe.</div>
+          }
+        </div>
+      </section>
+
+      <!-- 2. Informations du voyageur -->
       <section class="mb-4">
         <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Informations du voyageur</h6>
         @if (isAnonymous()) {
@@ -112,13 +195,9 @@
                   [disabled]="!form.controls.publicResponse.value"
                 />
                 <label class="form-check-label" for="reply-send-email">
-                  Envoyer également cette réponse par e-mail
+                  Transférer
                 </label>
               </div>
-              <p class="small text-body-secondary mb-2 mt-2">
-                Disponible uniquement si la réponse est visible à l'auteur. Un lien sécurisé (UUID)
-                sera inclus dans l'e-mail.
-              </p>
               <div class="small">
                 <span class="text-body-secondary">Destinataire :</span>
                 <div class="fw-semibold">{{ passengerEmail() }}</div>
@@ -135,7 +214,7 @@
             </div>
           }
 
-          <div class="p-3 border rounded-2 mb-3">
+          <!-- <div class="p-3 border rounded-2 mb-3">
             <div class="form-check">
               <input
                 cFormControl
@@ -149,11 +228,7 @@
                 Visible à l'auteur du signalement
               </label>
             </div>
-            <p class="small text-body-secondary mb-0 mt-2">
-              Si décochée, la réponse reste visible uniquement par les agents de l'administration et
-              n'apparaît pas dans l'espace de suivi du voyageur.
-            </p>
-          </div>
+          </div> -->
 
           <div class="p-3 border rounded-2">
             <div class="form-check">
@@ -164,7 +239,7 @@
                 id="reply-publish"
                 formControlName="publish"
               />
-              <label class="form-check-label" for="reply-publish">Visible à l'accueil</label>
+              <label class="form-check-label" for="reply-publish">Épingler à l'accueil</label>
             </div>
             <p class="small text-body-secondary mb-0 mt-2">
               Si cochée, le signalement / la réponse pourra apparaître sur l'espace d'accueil public.
