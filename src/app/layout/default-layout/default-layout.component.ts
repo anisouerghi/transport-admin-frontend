@@ -8,10 +8,10 @@ import {
   RouterLink,
   RouterOutlet,
 } from '@angular/router';
-import { environment } from '../../../environments/environment';
 import { NgScrollbar } from 'ngx-scrollbar';
 import { ToastContainerComponent } from '../../shared/components/toast-container.component';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfigService } from '../../core/config/config.service';
 import { MenuItem } from '../../core/models/auth.model';
 import { INavData } from '@coreui/angular';
 import { UpdatePasswordModalComponent } from '../../features/auth/components/update-password-modal.component';
@@ -74,8 +74,11 @@ const ENSURED_MENUS: MenuItem[] = [
 export class DefaultLayoutComponent implements OnInit {
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
+  private readonly configService = inject(ConfigService);
 
-  readonly rtl = environment.rtl;
+  get rtl(): boolean {
+    return this.configService.rtl;
+  }
   readonly brandFull = 'transport signalement admin';
   readonly brandShort = 'TSA';
   readonly loadingLabel = 'Chargement…';

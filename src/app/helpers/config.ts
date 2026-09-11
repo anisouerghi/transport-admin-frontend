@@ -9,9 +9,12 @@ export class Config {
   public static get APP_VERSION(): string {
     return '1.0';
   }
+<<<<<<< HEAD
 
   public static get API_LINK(): string {
     // return 'http://10.0.2.2:8080';
      return 'http://localhost:8082';
   }
+=======
+>>>>>>> f840af5 (runtime config with signa (DEV/PROD config.json))
 }

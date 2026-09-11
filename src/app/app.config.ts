@@ -11,6 +11,7 @@ import { routes } from './app.routes';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { iconSubset } from './icons/icon-subset';
+import { ConfigService, initAppConfig } from './core/config/config.service';
 
 function initIcons(iconSet: IconSetService) {
   return () => {
@@ -31,6 +32,12 @@ export const appConfig: ApplicationConfig = {
     IconSetService,
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initAppConfig,
+      deps: [ConfigService],
+      multi: true,
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: initIcons,

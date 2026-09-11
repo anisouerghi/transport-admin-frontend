@@ -1,22 +1,58 @@
-import { Config } from '../../helpers/config';
+let apiBaseUrl = '';
 
-/** Configuration centrale des endpoints API admin. */
-export const API_CONFIG = {
-  baseUrl: `${Config.API_LINK}/api`,
-  auth: `${Config.API_LINK}/api/auth`,
+function api(path: string): string {
+  return `${apiBaseUrl}${path}`;
+}
+
+export type AdminApiConfig = {
+  baseUrl: string;
+  auth: string;
   admin: {
-    users: `${Config.API_LINK}/api/admin/users`,
-    roles: `${Config.API_LINK}/api/admin/roles`,
-    permissions: `${Config.API_LINK}/api/admin/permissions`,
-    supportTypes: `${Config.API_LINK}/api/admin/support-types`,
-    districts: `${Config.API_LINK}/api/admin/districts`,
-    reportTypes: `${Config.API_LINK}/api/admin/report-types`,
-    transportSupports: `${Config.API_LINK}/api/admin/transport-supports`,
-    signalements: `${Config.API_LINK}/api/admin/signalements`,
-    reports: `${Config.API_LINK}/api/admin/reports`,
-    statuses: `${Config.API_LINK}/api/admin/status`,
-    auditLogs: `${Config.API_LINK}/api/admin/audit-logs`,
-    passengers: `${Config.API_LINK}/api/admin/passengers`,
-    statistics: `${Config.API_LINK}/api/admin/statistics`,
-  },
-} as const;
+    users: string;
+    roles: string;
+    permissions: string;
+    supportTypes: string;
+    districts: string;
+    reportTypes: string;
+    transportSupports: string;
+    signalements: string;
+    reports: string;
+    statuses: string;
+    auditLogs: string;
+    passengers: string;
+    statistics: string;
+  };
+};
+
+function buildApiConfig(): AdminApiConfig {
+  return {
+    baseUrl: api('/api'),
+    auth: api('/api/auth'),
+    admin: {
+      users: api('/api/admin/users'),
+      roles: api('/api/admin/roles'),
+      permissions: api('/api/admin/permissions'),
+      supportTypes: api('/api/admin/support-types'),
+      districts: api('/api/admin/districts'),
+      reportTypes: api('/api/admin/report-types'),
+      transportSupports: api('/api/admin/transport-supports'),
+      signalements: api('/api/admin/signalements'),
+      reports: api('/api/admin/reports'),
+      statuses: api('/api/admin/status'),
+      auditLogs: api('/api/admin/audit-logs'),
+      passengers: api('/api/admin/passengers'),
+      statistics: api('/api/admin/statistics'),
+    },
+  };
+}
+
+/** Configuration centrale des endpoints API admin (apiBaseUrl charge depuis config.json). */
+export const API_CONFIG: AdminApiConfig = buildApiConfig();
+
+export function initializeApiConfig(baseUrl: string): void {
+  apiBaseUrl = baseUrl;
+  const built = buildApiConfig();
+  API_CONFIG.baseUrl = built.baseUrl;
+  API_CONFIG.auth = built.auth;
+  Object.assign(API_CONFIG.admin, built.admin);
+}
