@@ -79,6 +79,14 @@
                       style="width: 72px; height: 72px; object-fit: cover; cursor: pointer"
                       (click)="openView(att)"
                     />
+                  } @else if (isAudio(att)) {
+                    <div
+                      class="border rounded d-flex align-items-center justify-content-center bg-light text-success fw-semibold"
+                      style="width: 72px; height: 72px; font-size: 0.7rem"
+                      title="Message vocal"
+                    >
+                      AUDIO
+                    </div>
                   } @else if (isPdf(att)) {
                     <div
                       class="border rounded d-flex align-items-center justify-content-center bg-light text-danger fw-semibold"
@@ -96,15 +104,25 @@
                   }
                 </div>
                 <div class="flex-grow-1" style="min-width: 10rem">
-                  <div class="fw-semibold text-break">{{ att.fileName }}</div>
+                  <div class="fw-semibold text-break">
+                    {{ att.fileName }}
+                    @if (isAudio(att)) {
+                      <span class="badge text-bg-success ms-2">Message vocal</span>
+                    }
+                  </div>
                   <div class="small text-body-secondary">
                     {{ att.fileType || 'type inconnu' }} · {{ formatSize(att.fileSize) }}
                   </div>
+                  @if (audioUrls()[att.attachmentId]; as audioSrc) {
+                    <audio class="mt-2 w-100" style="max-width: 22rem; height: 2.5rem" controls [src]="audioSrc" preload="metadata"></audio>
+                  }
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                  <button cButton color="info" variant="outline" size="sm" type="button" (click)="openView(att)">
-                    Voir
-                  </button>
+                  @if (!isAudio(att)) {
+                    <button cButton color="info" variant="outline" size="sm" type="button" (click)="openView(att)">
+                      Voir
+                    </button>
+                  }
                   <button
                     cButton
                     color="primary"

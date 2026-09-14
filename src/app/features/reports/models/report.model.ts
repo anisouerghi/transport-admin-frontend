@@ -41,6 +41,7 @@ export interface ReportAttachment {
   fileSize?: number | null;
   reportId?: number;
   image?: boolean;
+  audio?: boolean;
 }
 
 export interface Report {

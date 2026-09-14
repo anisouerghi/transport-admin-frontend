@@ -74,6 +74,7 @@ export class ReportDetailModalComponent implements OnChanges, OnDestroy {
   readonly replies = signal<ReportReply[]>([]);
   readonly attachments = signal<ReportAttachment[]>([]);
   readonly previewUrls = signal<Record<number, string>>({});
+  readonly audioUrls = signal<Record<number, string>>({});
   readonly downloadingId = signal<number | null>(null);
   readonly priorities = PRIORITY_OPTIONS;
   readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
@@ -145,6 +146,18 @@ export class ReportDetailModalComponent implements OnChanges, OnDestroy {
       || (att.fileName ?? '').toLowerCase().endsWith('.pdf');
   }
 
+  isAudio(att: ReportAttachment): boolean {
+    if (att.audio) {
+      return true;
+    }
+    const type = (att.fileType ?? '').toLowerCase();
+    if (type.startsWith('audio/')) {
+      return true;
+    }
+    const name = (att.fileName ?? '').toLowerCase();
+    return ['.webm', '.m4a', '.mp3', '.ogg', '.mp4'].some((ext) => name.endsWith(ext));
+  }
+
   download(att: ReportAttachment): void {
     this.downloadingId.set(att.attachmentId);
     this.reportsService.downloadAttachmentBlob(att.attachmentId).subscribe({
@@ -203,15 +216,21 @@ export class ReportDetailModalComponent implements OnChanges, OnDestroy {
   private loadImagePreviews(items: ReportAttachment[]): void {
     this.clearPreviews();
     for (const att of items) {
-      if (!att.image) {
-        continue;
+      if (att.image) {
+        this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
+          next: (blob) => {
+            const url = URL.createObjectURL(blob);
+            this.previewUrls.update((map) => ({ ...map, [att.attachmentId]: url }));
+          },
+        });
+      } else if (this.isAudio(att)) {
+        this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
+          next: (blob) => {
+            const url = URL.createObjectURL(blob);
+            this.audioUrls.update((map) => ({ ...map, [att.attachmentId]: url }));
+          },
+        });
       }
-      this.reportsService.viewAttachmentBlob(att.attachmentId).subscribe({
-        next: (blob) => {
-          const url = URL.createObjectURL(blob);
-          this.previewUrls.update((map) => ({ ...map, [att.attachmentId]: url }));
-        },
-      });
     }
   }
 
@@ -230,6 +249,11 @@ export class ReportDetailModalComponent implements OnChanges, OnDestroy {
       URL.revokeObjectURL(url);
     }
     this.previewUrls.set({});
+    const audio = Object.values(this.audioUrls());
+    for (const url of audio) {
+      URL.revokeObjectURL(url);
+    }
+    this.audioUrls.set({});
   }
 
   private resetState(): void {
