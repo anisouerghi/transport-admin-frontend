@@ -3,6 +3,9 @@ export interface ReportType {
   reportTypeId: number;
   code: string;
   label: string;
+  labelFr?: string | null;
+  labelAr?: string | null;
+  labelEn?: string | null;
   description?: string | null;
   active: boolean;
 }
@@ -11,6 +14,8 @@ export interface ReportType {
 export interface ReportTypeRequest {
   code: string;
   label: string;
+  labelAr?: string;
+  labelEn?: string;
   description?: string;
 }
 

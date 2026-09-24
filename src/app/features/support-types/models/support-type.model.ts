@@ -4,14 +4,19 @@ export interface SupportType {
   supportTypeId: number;
   /** Code metier unique (ex. BUS). */
   code: string;
-  /** Libelle affiche. */
+  /** Libelle affiche (localise). */
   label: string;
+  labelFr?: string | null;
+  labelAr?: string | null;
+  labelEn?: string | null;
 }
 
 /** Payload create / update (POST|PUT). */
 export interface SupportTypeRequest {
   code: string;
   label: string;
+  labelAr?: string;
+  labelEn?: string;
 }
 
 /** Filtres envoyes dans POST /search -> filters. */

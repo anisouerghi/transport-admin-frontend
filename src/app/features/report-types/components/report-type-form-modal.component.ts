@@ -54,6 +54,8 @@ export class ReportTypeFormModalComponent implements OnChanges {
   readonly form = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.maxLength(50)]],
     label: ['', [Validators.required, Validators.maxLength(150)]],
+    labelAr: ['', [Validators.maxLength(150)]],
+    labelEn: ['', [Validators.maxLength(150)]],
     description: ['', [Validators.maxLength(500)]],
   });
 
@@ -66,11 +68,13 @@ export class ReportTypeFormModalComponent implements OnChanges {
     if (this.item) {
       this.form.reset({
         code: this.item.code,
-        label: this.item.label,
+        label: this.item.labelFr || this.item.label,
+        labelAr: this.item.labelAr ?? '',
+        labelEn: this.item.labelEn ?? '',
         description: this.item.description ?? '',
       });
     } else {
-      this.form.reset({ code: '', label: '', description: '' });
+      this.form.reset({ code: '', label: '', labelAr: '', labelEn: '', description: '' });
     }
   }
 
@@ -92,6 +96,8 @@ export class ReportTypeFormModalComponent implements OnChanges {
     const payload: ReportTypeRequest = {
       code: raw.code,
       label: raw.label,
+      labelAr: raw.labelAr || undefined,
+      labelEn: raw.labelEn || undefined,
       description: raw.description || undefined,
     };
     this.saving.set(true);

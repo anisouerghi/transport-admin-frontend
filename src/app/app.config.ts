@@ -10,6 +10,7 @@ import { IconSetService } from '@coreui/icons-angular';
 import { routes } from './app.routes';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { acceptLanguageInterceptor } from './core/interceptors/accept-language.interceptor';
 import { iconSubset } from './icons/icon-subset';
 import { ConfigService, initAppConfig } from './core/config/config.service';
 
@@ -31,7 +32,7 @@ export const appConfig: ApplicationConfig = {
     ),
     IconSetService,
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([acceptLanguageInterceptor, authInterceptor, errorInterceptor])),
     {
       provide: APP_INITIALIZER,
       useFactory: initAppConfig,

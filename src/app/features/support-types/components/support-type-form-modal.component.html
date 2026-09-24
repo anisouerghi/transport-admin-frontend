@@ -14,11 +14,19 @@
           }
         </c-col>
         <c-col md="6">
-          <label cLabel for="label">Label</label>
+          <label cLabel for="label">Label FR</label>
           <input cFormControl id="label" formControlName="label" [valid]="fieldTouchedValid('label')" />
           @if (fieldInvalid('label')) {
-            <div class="invalid-feedback d-block">Label is required (max 150).</div>
+            <div class="invalid-feedback d-block">French label is required (max 150).</div>
           }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="labelAr">Label AR</label>
+          <input cFormControl id="labelAr" formControlName="labelAr" dir="rtl" />
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="labelEn">Label EN</label>
+          <input cFormControl id="labelEn" formControlName="labelEn" />
         </c-col>
       </c-row>
     </form>

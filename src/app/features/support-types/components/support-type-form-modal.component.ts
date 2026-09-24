@@ -54,6 +54,8 @@ export class SupportTypeFormModalComponent implements OnChanges {
   readonly form = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.maxLength(50)]],
     label: ['', [Validators.required, Validators.maxLength(150)]],
+    labelAr: ['', [Validators.maxLength(150)]],
+    labelEn: ['', [Validators.maxLength(150)]],
   });
 
   get isEdit(): boolean {
@@ -63,9 +65,14 @@ export class SupportTypeFormModalComponent implements OnChanges {
   ngOnChanges(): void {
     this.submitted.set(false);
     if (this.item) {
-      this.form.reset({ code: this.item.code, label: this.item.label });
+      this.form.reset({
+        code: this.item.code,
+        label: this.item.labelFr || this.item.label,
+        labelAr: this.item.labelAr ?? '',
+        labelEn: this.item.labelEn ?? '',
+      });
     } else {
-      this.form.reset({ code: '', label: '' });
+      this.form.reset({ code: '', label: '', labelAr: '', labelEn: '' });
     }
   }
 
@@ -83,7 +90,13 @@ export class SupportTypeFormModalComponent implements OnChanges {
       this.form.markAllAsTouched();
       return;
     }
-    const payload: SupportTypeRequest = this.form.getRawValue();
+    const raw = this.form.getRawValue();
+    const payload: SupportTypeRequest = {
+      code: raw.code,
+      label: raw.label,
+      labelAr: raw.labelAr || undefined,
+      labelEn: raw.labelEn || undefined,
+    };
     this.saving.set(true);
     const req$ =
       this.isEdit && this.item
