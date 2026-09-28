@@ -69,6 +69,13 @@ export class ReportsService {
       .pipe(map((r) => r.data));
   }
 
+  /** Met à jour le type (nature voyageur / ReportType). null = non définie. */
+  updateReportType(reportId: number, reportTypeId: number | null): Observable<Report> {
+    return this.http
+      .patch<ApiResponse<Report>>(`${this.baseUrl}/${reportId}/report-type`, { reportTypeId })
+      .pipe(map((r) => r.data));
+  }
+
   /** Liste des pièces jointes d'un signalement. */
   getAttachments(reportId: number): Observable<ReportAttachment[]> {
     return this.http

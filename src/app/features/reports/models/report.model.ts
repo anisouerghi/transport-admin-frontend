@@ -53,6 +53,7 @@ export interface Report {
   priority?: Priority;
   closureDate?: string;
   transportSupport?: TransportSupport | null;
+  reportTypeId?: number | null;
   reportTypeCode?: string;
   reportTypeLabel?: string;
   passenger?: Passenger | null;
@@ -103,4 +104,9 @@ export interface ReportReply {
 
 export interface UpdatePriorityRequest {
   priority: Priority;
+}
+
+export interface UpdateReportTypeRequest {
+  /** null = nature non définie */
+  reportTypeId: number | null;
 }

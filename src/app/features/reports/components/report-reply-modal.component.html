@@ -22,12 +22,27 @@
       </div>
 
       <!-- 1. Détails du signalement -->
+      <form cForm id="reply-treat-form" [formGroup]="form" (ngSubmit)="submit()">
       <section class="mb-4">
         <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Détails du signalement</h6>
         <div class="p-3 border rounded-2">
           <dl class="row mb-0 gy-2">
-            <dt class="col-sm-4 text-body-secondary">Type</dt>
-            <dd class="col-sm-8 mb-0">{{ r.reportTypeLabel || '—' }}</dd>
+            <dt class="col-sm-4 text-body-secondary">
+              <label class="mb-0" for="reply-report-type">Nature du signalement</label>
+            </dt>
+            <dd class="col-sm-8 mb-0">
+              <select
+                cSelect
+                id="reply-report-type"
+                class="form-select"
+                formControlName="reportTypeId"
+              >
+                <option value="">Non définie</option>
+                @for (t of reportTypes(); track t.reportTypeId) {
+                  <option [value]="t.reportTypeId">{{ t.label }}</option>
+                }
+              </select>
+            </dd>
             @if (r.transportSupport?.label) {
               <dt class="col-sm-4 text-body-secondary">Support de transport</dt>
               <dd class="col-sm-8 mb-0">{{ r.transportSupport?.label }}</dd>
@@ -150,7 +165,6 @@
         }
       </section>
 
-      <form cForm [formGroup]="form" (ngSubmit)="submit()">
         <!-- 2. Réponse de l'agent -->
         <section class="mb-4">
           <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Réponse de l'agent</h6>
@@ -231,22 +245,6 @@
               signalement.
             </div>
           }
-
-          <!-- <div class="p-3 border rounded-2 mb-3">
-            <div class="form-check">
-              <input
-                cFormControl
-                class="form-check-input"
-                type="checkbox"
-                id="reply-public-response"
-                formControlName="publicResponse"
-                (change)="onPublicResponseChange()"
-              />
-              <label class="form-check-label" for="reply-public-response">
-                Visible à l'auteur du signalement
-              </label>
-            </div>
-          </div> -->
 
           <div class="p-3 border rounded-2">
             <div class="form-check">

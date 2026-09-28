@@ -20,8 +20,20 @@ import {
 } from '@coreui/angular';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ReportType } from '../../report-types/models/report-type.model';
+import { ReportTypesService } from '../../report-types/services/report-types.service';
 import { PRIORITY_OPTIONS, Priority, ReportReplyRequest, Report, ReportAttachment, Status } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
+
+/** Ordre fixe des natures voyageur (ReportType). */
+const NATURE_ORDER = [
+  'COMPLAINT',
+  'ASSAULT',
+  'INCIDENT',
+  'SUGGESTION',
+  'THANKS',
+  'OTHER',
+] as const;
 
 @Component({
   selector: 'app-report-reply-modal',
@@ -49,6 +61,7 @@ import { ReportsService } from '../services/reports.service';
 })
 export class ReportReplyModalComponent implements OnChanges {
   private readonly reportsService = inject(ReportsService);
+  private readonly reportTypesService = inject(ReportTypesService);
   private readonly notifications = inject(NotificationService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
@@ -62,6 +75,7 @@ export class ReportReplyModalComponent implements OnChanges {
   readonly loadingReport = signal(false);
   readonly submitted = signal(false);
   readonly statuses = signal<Status[]>([]);
+  readonly reportTypes = signal<ReportType[]>([]);
   /** Signalement enrichi (détail API) pour infos voyageur complètes. */
   readonly detail = signal<Report | null>(null);
   readonly attachments = signal<ReportAttachment[]>([]);
@@ -72,6 +86,7 @@ export class ReportReplyModalComponent implements OnChanges {
   readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
 
   readonly form = this.fb.nonNullable.group({
+    reportTypeId: '' as string | number,
     message: ['', [Validators.required, Validators.maxLength(2000)]],
     statusId: '' as string | number,
     priority: '' as Priority | '',
@@ -87,6 +102,7 @@ export class ReportReplyModalComponent implements OnChanges {
       this.clearPreviews();
       this.attachments.set([]);
       this.form.reset({
+        reportTypeId: '',
         message: '',
         statusId: '',
         priority: '',
@@ -98,6 +114,9 @@ export class ReportReplyModalComponent implements OnChanges {
     }
     if (this.statuses().length === 0) {
       this.loadStatuses();
+    }
+    if (this.reportTypes().length === 0) {
+      this.loadReportTypes();
     }
     const reportId = this.report?.reportId;
     if (reportId != null && (changes['visible'] || changes['report'])) {
@@ -167,6 +186,16 @@ export class ReportReplyModalComponent implements OnChanges {
       !!raw.priority &&
       raw.priority !== current.priority;
 
+    const selectedTypeRaw = raw.reportTypeId === '' || raw.reportTypeId == null
+      ? null
+      : Number(raw.reportTypeId);
+    const selectedTypeId =
+      selectedTypeRaw != null && !Number.isNaN(selectedTypeRaw) && selectedTypeRaw > 0
+        ? selectedTypeRaw
+        : null;
+    const previousTypeId = current.reportTypeId ?? null;
+    const typeChanged = selectedTypeId !== previousTypeId;
+
     this.reportsService.createReply(reportId, payload).subscribe({
       next: (res) => {
         const finish = (baseMsg: string) => {
@@ -182,19 +211,40 @@ export class ReportReplyModalComponent implements OnChanges {
           this.close();
         };
 
-        if (!priorityChanged) {
-          finish('Réponse enregistrée');
+        const afterType = () => {
+          if (!priorityChanged) {
+            finish('Réponse enregistrée');
+            return;
+          }
+          this.reportsService.updatePriority(reportId, raw.priority).subscribe({
+            next: () => finish(res.message || 'Réponse et priorité enregistrées'),
+            error: () => {
+              if (res.success) {
+                this.notifications.success(res.message || 'Réponse enregistrée');
+              } else {
+                this.notifications.error(res.message || "Échec d'envoi de l'e-mail");
+              }
+              this.notifications.error("La priorité n'a pas pu être mise à jour.");
+              this.saving.set(false);
+              this.replied.emit();
+              this.close();
+            },
+          });
+        };
+
+        if (!typeChanged) {
+          afterType();
           return;
         }
-        this.reportsService.updatePriority(reportId, raw.priority).subscribe({
-          next: () => finish(res.message || 'Réponse et priorité enregistrées'),
+        this.reportsService.updateReportType(reportId, selectedTypeId).subscribe({
+          next: () => afterType(),
           error: () => {
             if (res.success) {
               this.notifications.success(res.message || 'Réponse enregistrée');
             } else {
               this.notifications.error(res.message || "Échec d'envoi de l'e-mail");
             }
-            this.notifications.error("La priorité n'a pas pu être mise à jour.");
+            this.notifications.error("La nature du signalement n'a pas pu être mise à jour.");
             this.saving.set(false);
             this.replied.emit();
             this.close();
@@ -213,6 +263,7 @@ export class ReportReplyModalComponent implements OnChanges {
         const email = r.passenger?.email?.trim() ?? '';
         const hasEmail = this.isValidEmail(email);
         this.form.reset({
+          reportTypeId: r.reportTypeId ?? '',
           message: '',
           statusId: r.status?.statusId ?? '',
           priority: (r.priority as Priority) || '',
@@ -228,6 +279,7 @@ export class ReportReplyModalComponent implements OnChanges {
         this.detail.set(fallback);
         const email = fallback?.passenger?.email?.trim() ?? '';
         this.form.patchValue({
+          reportTypeId: fallback?.reportTypeId ?? '',
           statusId: fallback?.status?.statusId ?? '',
           priority: (fallback?.priority as Priority) || '',
           sendEmail: this.isValidEmail(email),
@@ -366,6 +418,25 @@ export class ReportReplyModalComponent implements OnChanges {
       next: (statuses) => this.statuses.set(statuses),
       error: () => {},
     });
+  }
+
+  private loadReportTypes(): void {
+    this.reportTypesService.getActive().subscribe({
+      next: (types) => this.reportTypes.set(this.orderNatures(types)),
+      error: () => {},
+    });
+  }
+
+  private orderNatures(types: ReportType[]): ReportType[] {
+    const byCode = new Map(types.map((t) => [t.code?.toUpperCase(), t]));
+    const ordered: ReportType[] = [];
+    for (const code of NATURE_ORDER) {
+      const hit = byCode.get(code);
+      if (hit) {
+        ordered.push(hit);
+      }
+    }
+    return ordered;
   }
 
   private isValidEmail(value: string): boolean {
