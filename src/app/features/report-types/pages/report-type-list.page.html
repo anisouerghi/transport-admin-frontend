@@ -44,8 +44,10 @@
           <thead>
             <tr>
               <th role="button" (click)="toggleSort('id')">ID</th>
+              <th>Icon</th>
               <th role="button" (click)="toggleSort('code')">Code</th>
               <th role="button" (click)="toggleSort('label')">Label</th>
+              <th role="button" class="text-end" (click)="toggleSort('priority')">Priority</th>
               <th role="button" (click)="toggleSort('description')">Description</th>
               <th role="button" (click)="toggleSort('active')">Status</th>
               <th class="text-end">Actions</th>
@@ -55,8 +57,15 @@
             @for (item of items(); track item.reportTypeId) {
               <tr>
                 <td>{{ item.reportTypeId }}</td>
+                <td>
+                  <span class="d-inline-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined report-type-icon" aria-hidden="true">{{ item.icon || iconFor(item.code) }}</span>
+                    <small class="text-body-secondary">{{ item.icon || iconFor(item.code) }}</small>
+                  </span>
+                </td>
                 <td>{{ item.code }}</td>
                 <td>{{ item.label }}</td>
+                <td class="text-end">{{ item.priority ?? '—' }}</td>
                 <td class="text-truncate" style="max-width: 240px">{{ item.description || '—' }}</td>
                 <td>
                   <c-badge [color]="item.active ? 'success' : 'secondary'">
@@ -74,7 +83,7 @@
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="6" class="text-center text-body-secondary py-4">No report types found.</td></tr>
+              <tr><td colspan="8" class="text-center text-body-secondary py-4">No report types found.</td></tr>
             }
           </tbody>
         </table>

@@ -23,6 +23,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal.component';
 import { ReportTypeFormModalComponent } from '../components/report-type-form-modal.component';
 import { ReportType, ReportTypeFilter } from '../models/report-type.model';
+import { reportTypeIcon } from '../report-type-icons';
 import { ReportTypesService } from '../services/report-types.service';
 
 type ConfirmAction = 'delete' | 'activate' | 'deactivate';
@@ -53,6 +54,16 @@ type ConfirmAction = 'delete' | 'activate' | 'deactivate';
     ConfirmModalComponent,
   ],
   templateUrl: './report-type-list.page.html',
+  styles: [`
+    .report-type-icon {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: #0b52a8;
+    }
+  `],
 })
 export class ReportTypeListPage implements OnInit {
   private readonly service = inject(ReportTypesService);
@@ -66,7 +77,7 @@ export class ReportTypeListPage implements OnInit {
   readonly totalPages = signal(1);
   readonly page = signal(0);
   readonly pageSize = 10;
-  readonly sortBy = signal('code');
+  readonly sortBy = signal('priority');
   readonly sortDirection = signal<'ASC' | 'DESC'>('ASC');
 
   readonly formModalVisible = signal(false);
@@ -81,6 +92,8 @@ export class ReportTypeListPage implements OnInit {
     description: '',
     active: '' as '' | 'true' | 'false',
   });
+
+  readonly iconFor = reportTypeIcon;
 
   ngOnInit(): void {
     this.load();

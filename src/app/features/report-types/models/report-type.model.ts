@@ -7,6 +7,9 @@ export interface ReportType {
   labelAr?: string | null;
   labelEn?: string | null;
   description?: string | null;
+  priority?: number | null;
+  /** Nom Material Symbols, ex. crisis_alert. */
+  icon?: string | null;
   active: boolean;
 }
 
@@ -17,6 +20,8 @@ export interface ReportTypeRequest {
   labelAr?: string;
   labelEn?: string;
   description?: string;
+  priority: number;
+  icon?: string;
 }
 
 /** Filtres envoyes dans POST /search -> filters. */

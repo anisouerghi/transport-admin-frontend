@@ -28,6 +28,68 @@
           <label cLabel for="labelEn">Label EN</label>
           <input cFormControl id="labelEn" formControlName="labelEn" />
         </c-col>
+        <c-col md="6">
+          <label cLabel id="icon-label" for="icon">Icon</label>
+          <div class="icon-picker" #iconPicker>
+            <div class="icon-picker__field" [class.is-invalid]="fieldInvalid('icon')">
+              <span class="material-symbols-outlined" aria-hidden="true">{{ iconName() || 'info' }}</span>
+              <input
+                cFormControl
+                id="icon"
+                formControlName="icon"
+                placeholder="crisis_alert"
+                autocomplete="off"
+                aria-labelledby="icon-label"
+                aria-haspopup="listbox"
+                [attr.aria-expanded]="iconMenuOpen()"
+                [valid]="fieldTouchedValid('icon')"
+                (focus)="openIconMenu()"
+                (input)="openIconMenu()"
+              />
+              <button type="button" class="icon-picker__chevron" aria-label="Show icons" (click)="toggleIconMenu()">
+                <span class="material-symbols-outlined" aria-hidden="true">expand_more</span>
+              </button>
+            </div>
+            @if (iconMenuOpen()) {
+              <ul class="icon-picker__menu" role="listbox" aria-labelledby="icon-label">
+                @for (name of iconChoices(); track name) {
+                  <li>
+                    <button
+                      type="button"
+                      class="icon-picker__option"
+                      role="option"
+                      [attr.aria-selected]="iconName() === name"
+                      (click)="selectIcon(name)"
+                    >
+                      <span class="material-symbols-outlined" aria-hidden="true">{{ name }}</span>
+                      <span>{{ name }}</span>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="icon-picker__hint">Type a Material Symbols name to use it.</li>
+                }
+              </ul>
+            }
+          </div>
+          @if (fieldInvalid('icon')) {
+            <div class="invalid-feedback d-block">Icon name is required (example: crisis_alert or local_hospital).</div>
+          }
+        </c-col>
+        <c-col md="6">
+          <label cLabel for="priority">Priority</label>
+          <input
+            cFormControl
+            id="priority"
+            type="number"
+            min="1"
+            max="9999"
+            formControlName="priority"
+            [valid]="fieldTouchedValid('priority')"
+          />
+          @if (fieldInvalid('priority')) {
+            <div class="invalid-feedback d-block">Priority is required (1 = first).</div>
+          }
+        </c-col>
         <c-col cols="12">
           <label cLabel for="description">Description</label>
           <textarea
