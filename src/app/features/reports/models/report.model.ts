@@ -89,6 +89,8 @@ export interface ReportReplyRequest {
   sendEmail?: boolean;
   publish?: boolean;
   publicResponse?: boolean;
+  /** RESPONSE, COMPLEMENT_REQUEST ou INTERNAL_NOTE. Absent = réponse classique. */
+  replyType?: string;
 }
 
 export interface ReportReply {
@@ -100,6 +102,9 @@ export interface ReportReply {
   publish?: boolean;
   reportId: number;
   userId: number;
+  replyType?: string;
+  authorType?: string;
+  passengerId?: number;
 }
 
 export interface UpdatePriorityRequest {

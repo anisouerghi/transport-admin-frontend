@@ -165,10 +165,50 @@
         }
       </section>
 
+        @if (existingReplies().length > 0) {
+          <section class="mb-4">
+            <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Échanges</h6>
+            @for (reply of existingReplies(); track reply.replyId) {
+              <article
+                class="reply-line mb-2 p-3 border rounded-2"
+                [class.reply-line--internal]="reply.replyType === internalNote"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">{{
+                  reply.replyType === internalNote ? 'lock' : 'chat'
+                }}</span>
+                <div>
+                  <div class="small text-body-secondary mb-1">
+                    {{ replyTypeLabel(reply.replyType) }} · {{ replyAuthorLabel(reply.authorType) }}
+                    · {{ reply.replyDate | date: 'dd/MM/yyyy HH:mm' }}
+                  </div>
+                  @if (reply.replyType === internalNote) {
+                    <div class="small fw-semibold mb-1">Note interne — visible uniquement par TRANSTU</div>
+                  }
+                  <p class="mb-0" style="white-space: pre-wrap;">{{ reply.message }}</p>
+                </div>
+              </article>
+            }
+          </section>
+        }
+
         <!-- 2. Réponse de l'agent -->
         <section class="mb-4">
           <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Réponse de l'agent</h6>
           <c-row class="g-3">
+            <c-col xs="12" md="6">
+              <label cLabel for="reply-kind">Type de message</label>
+              <select
+                cSelect
+                id="reply-kind"
+                class="form-select"
+                formControlName="replyType"
+                (change)="onReplyTypeChange()"
+              >
+                @for (kind of replyTypes; track kind.value) {
+                  <option [value]="kind.value">{{ kind.label }}</option>
+                }
+              </select>
+            </c-col>
             <c-col xs="12">
               <label cLabel for="reply-message">Message *</label>
               <textarea
@@ -224,7 +264,7 @@
                   type="checkbox"
                   id="reply-send-email"
                   formControlName="sendEmail"
-                  [disabled]="!form.controls.publicResponse.value"
+                  [disabled]="form.controls.replyType.value === internalNote || !form.controls.publicResponse.value"
                 />
                 <label class="form-check-label" for="reply-send-email">
                   Transférer
@@ -254,6 +294,7 @@
                 type="checkbox"
                 id="reply-publish"
                 formControlName="publish"
+                [disabled]="form.controls.replyType.value === internalNote"
               />
               <label class="form-check-label" for="reply-publish">Épingler à l'accueil</label>
             </div>

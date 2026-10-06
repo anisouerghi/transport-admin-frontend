@@ -150,7 +150,7 @@
             @for (reply of replies(); track reply.replyId) {
               <div class="mb-3 p-3 border rounded-2">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <small class="text-body-secondary">Réponse #{{ reply.replyId }}</small>
+                  <small class="text-body-secondary">{{ replyTypeLabel(reply.replyType) }} · {{ replyAuthorLabel(reply.authorType) }}</small>
                   <small class="text-body-secondary">{{ reply.replyDate | date: 'short' }}</small>
                 </div>
                 <p class="mb-2">{{ reply.message }}</p>

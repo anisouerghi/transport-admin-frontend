@@ -22,7 +22,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReportType } from '../../report-types/models/report-type.model';
 import { ReportTypesService } from '../../report-types/services/report-types.service';
-import { PRIORITY_OPTIONS, Priority, ReportReplyRequest, Report, ReportAttachment, Status } from '../models/report.model';
+import { AGENT_REPLY_TYPE, AGENT_REPLY_TYPE_OPTIONS, AgentReplyType, replyAuthorLabel, replyTypeLabel } from '../models/reply-kinds';
+import { PRIORITY_OPTIONS, Priority, ReportReply, ReportReplyRequest, Report, ReportAttachment, Status } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
 /** Ordre fixe des natures voyageur (ReportType). */
@@ -58,6 +59,22 @@ const NATURE_ORDER = [
     SpinnerComponent,
   ],
   templateUrl: './report-reply-modal.component.html',
+  styles: `
+    .reply-line {
+      display: grid;
+      grid-template-columns: 1.5rem minmax(0, 1fr);
+      gap: 0.6rem;
+      align-items: start;
+    }
+    .reply-line--internal {
+      background: #f7f1e8;
+      border-color: #e4d2a8 !important;
+    }
+    .reply-line .material-symbols-outlined {
+      font-size: 1.1rem;
+      margin-top: 0.1rem;
+    }
+  `,
 })
 export class ReportReplyModalComponent implements OnChanges {
   private readonly reportsService = inject(ReportsService);
@@ -83,6 +100,11 @@ export class ReportReplyModalComponent implements OnChanges {
   readonly audioUrls = signal<Record<number, string>>({});
   readonly downloadingId = signal<number | null>(null);
   readonly priorities = PRIORITY_OPTIONS;
+  readonly replyTypes = AGENT_REPLY_TYPE_OPTIONS;
+  readonly replyTypeLabel = replyTypeLabel;
+  readonly replyAuthorLabel = replyAuthorLabel;
+  readonly existingReplies = signal<ReportReply[]>([]);
+  readonly internalNote = AGENT_REPLY_TYPE.internalNote;
   readonly canUpdatePriority = () => this.auth.hasPermission('REPORT_UPDATE_PRIORITY');
 
   readonly form = this.fb.nonNullable.group({
@@ -93,6 +115,7 @@ export class ReportReplyModalComponent implements OnChanges {
     sendEmail: true,
     publicResponse: true,
     publish: false,
+    replyType: AGENT_REPLY_TYPE.response as AgentReplyType,
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -101,6 +124,7 @@ export class ReportReplyModalComponent implements OnChanges {
       this.detail.set(null);
       this.clearPreviews();
       this.attachments.set([]);
+      this.existingReplies.set([]);
       this.form.reset({
         reportTypeId: '',
         message: '',
@@ -109,7 +133,9 @@ export class ReportReplyModalComponent implements OnChanges {
         sendEmail: true,
         publicResponse: true,
         publish: false,
+        replyType: AGENT_REPLY_TYPE.response,
       });
+      this.enableMessageOptions();
       return;
     }
     if (this.statuses().length === 0) {
@@ -122,6 +148,36 @@ export class ReportReplyModalComponent implements OnChanges {
     if (reportId != null && (changes['visible'] || changes['report'])) {
       this.loadDetail(reportId);
     }
+  }
+
+  private enableMessageOptions(): void {
+    this.form.controls.sendEmail.enable();
+    this.form.controls.publish.enable();
+    this.form.controls.statusId.enable();
+  }
+
+  onReplyTypeChange(): void {
+    const type = this.form.controls.replyType.value;
+    if (type === AGENT_REPLY_TYPE.internalNote) {
+      this.form.patchValue({ publicResponse: false, sendEmail: false, publish: false });
+      this.form.controls.sendEmail.disable();
+      this.form.controls.publish.disable();
+      this.form.controls.statusId.disable();
+      return;
+    }
+    if (type === AGENT_REPLY_TYPE.complementRequest) {
+      this.form.controls.statusId.disable();
+    } else {
+      this.form.controls.statusId.enable();
+    }
+    this.form.controls.sendEmail.enable();
+    this.form.controls.publish.enable();
+    this.form.patchValue({
+      publicResponse: true,
+      sendEmail: type === AGENT_REPLY_TYPE.response || type === AGENT_REPLY_TYPE.complementRequest
+        ? this.hasPassengerEmail()
+        : this.form.controls.sendEmail.value,
+    });
   }
 
   onPublicResponseChange(): void {
@@ -167,16 +223,21 @@ export class ReportReplyModalComponent implements OnChanges {
     }
 
     const raw = this.form.getRawValue();
-    const canEmail = this.hasPassengerEmail();
+    const replyType = raw.replyType || AGENT_REPLY_TYPE.response;
+    const internal = replyType === AGENT_REPLY_TYPE.internalNote;
+    const canEmail = this.hasPassengerEmail() && !internal;
     const payload: ReportReplyRequest = {
       message: raw.message,
+      replyType,
       sendEmail: canEmail && raw.publicResponse ? raw.sendEmail : false,
-      publicResponse: raw.publicResponse,
-      publish: raw.publish,
+      publicResponse: internal ? false : raw.publicResponse,
+      publish: internal ? false : raw.publish,
     };
-    const statusId = Number(raw.statusId);
-    if (!Number.isNaN(statusId) && statusId > 0) {
-      payload.statusId = statusId;
+    if (replyType === AGENT_REPLY_TYPE.response) {
+      const statusId = Number(raw.statusId);
+      if (!Number.isNaN(statusId) && statusId > 0) {
+        payload.statusId = statusId;
+      }
     }
 
     this.saving.set(true);
@@ -270,7 +331,9 @@ export class ReportReplyModalComponent implements OnChanges {
           sendEmail: hasEmail,
           publicResponse: true,
           publish: false,
+          replyType: AGENT_REPLY_TYPE.response,
         });
+        this.enableMessageOptions();
         this.loadExistingRepliesAndAttachments(reportId);
       },
       error: () => {
@@ -285,7 +348,9 @@ export class ReportReplyModalComponent implements OnChanges {
           sendEmail: this.isValidEmail(email),
           publicResponse: true,
           publish: false,
+          replyType: AGENT_REPLY_TYPE.response,
         });
+        this.enableMessageOptions();
         if (fallback) {
           this.loadExistingRepliesAndAttachments(fallback.reportId);
         } else {
@@ -298,6 +363,7 @@ export class ReportReplyModalComponent implements OnChanges {
   private loadExistingRepliesAndAttachments(reportId: number): void {
     this.reportsService.getReplies(reportId).subscribe({
       next: (replies) => {
+        this.existingReplies.set(replies ?? []);
         if (replies && replies.length > 0) {
           const lastReply = replies[replies.length - 1];
           this.form.patchValue({
@@ -307,7 +373,7 @@ export class ReportReplyModalComponent implements OnChanges {
           });
         }
       },
-      error: () => {},
+      error: () => this.existingReplies.set([]),
     });
 
     this.reportsService.getAttachments(reportId).subscribe({

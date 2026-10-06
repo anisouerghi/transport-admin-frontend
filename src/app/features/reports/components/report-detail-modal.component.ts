@@ -27,6 +27,7 @@ import {
 import { AuthService } from '../../../core/services/auth.service';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { NotificationService } from '../../../core/services/notification.service';
+import { replyAuthorLabel, replyTypeLabel } from '../models/reply-kinds';
 import { ReportsService } from '../services/reports.service';
 import {
   PRIORITY_OPTIONS,
@@ -68,6 +69,8 @@ export class ReportDetailModalComponent implements OnChanges, OnDestroy {
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() updated = new EventEmitter<void>();
 
+  readonly replyTypeLabel = replyTypeLabel;
+  readonly replyAuthorLabel = replyAuthorLabel;
   readonly loading = signal(false);
   readonly savingPriority = signal(false);
   readonly report = signal<Report | null>(null);
