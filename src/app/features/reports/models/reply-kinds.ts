@@ -10,7 +10,6 @@ export type AgentReplyType = (typeof AGENT_REPLY_TYPE)[keyof typeof AGENT_REPLY_
 export const AGENT_REPLY_TYPE_OPTIONS: { value: AgentReplyType; label: string }[] = [
   { value: AGENT_REPLY_TYPE.response, label: 'Réponse' },
   { value: AGENT_REPLY_TYPE.complementRequest, label: 'Demande de complément' },
-  { value: AGENT_REPLY_TYPE.internalNote, label: 'Note interne' },
 ];
 
 export function replyTypeLabel(replyType: string | null | undefined): string {

@@ -1,4 +1,4 @@
-<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="lg">
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="xl">
   <c-modal-header>
     <h5 cModalTitle>Traiter le signalement</h5>
     <button cButtonClose (click)="close()" [disabled]="saving()"></button>
@@ -11,229 +11,229 @@
     } @else {
       @let r = detail() ?? report!;
 
-      <div class="mb-3 d-flex flex-wrap justify-content-between gap-2 align-items-center">
+      <header class="treat-head">
         <div>
-          <span class="text-body-secondary">Référence</span>
-          <div class="fw-semibold">{{ r.reference }}</div>
+          <p class="treat-kicker">Référence</p>
+          <p class="treat-ref">{{ r.reference }}</p>
+          <p class="treat-meta">
+            {{ r.creationDate | date: 'dd/MM/yyyy HH:mm' }}
+            @if (r.transportSupport?.label) {
+              · {{ r.transportSupport?.label }}
+            }
+          </p>
         </div>
         @if (r.status?.label) {
           <c-badge color="info">{{ r.status?.label }}</c-badge>
         }
-      </div>
+      </header>
 
-      <!-- 1. Détails du signalement -->
       <form cForm id="reply-treat-form" [formGroup]="form" (ngSubmit)="submit()">
-      <section class="mb-4">
-        <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Détails du signalement</h6>
-        <div class="p-3 border rounded-2">
-          <dl class="row mb-0 gy-2">
-            <dt class="col-sm-4 text-body-secondary">
-              <label class="mb-0" for="reply-report-type">Nature du signalement</label>
-            </dt>
-            <dd class="col-sm-8 mb-0">
-              <select
-                cSelect
-                id="reply-report-type"
-                class="form-select"
-                formControlName="reportTypeId"
-              >
+        <div class="treat-grid">
+          <div>
+            <section class="treat-card">
+              <h6>Dossier</h6>
+              <label cLabel for="reply-report-type">Nature du signalement</label>
+              <select cSelect id="reply-report-type" class="form-select mb-3" formControlName="reportTypeId">
                 <option value="">Non définie</option>
                 @for (t of reportTypes(); track t.reportTypeId) {
                   <option [value]="t.reportTypeId">{{ t.label }}</option>
                 }
               </select>
-            </dd>
-            @if (r.transportSupport?.label) {
-              <dt class="col-sm-4 text-body-secondary">Support de transport</dt>
-              <dd class="col-sm-8 mb-0">{{ r.transportSupport?.label }}</dd>
-            }
-            <dt class="col-sm-4 text-body-secondary">Date de création</dt>
-            <dd class="col-sm-8 mb-0">{{ r.creationDate | date: 'dd/MM/yyyy HH:mm' }}</dd>
-            <dt class="col-sm-4 text-body-secondary">Description</dt>
-            <dd class="col-sm-8 mb-0" style="white-space: pre-wrap;">{{ r.description || '—' }}</dd>
-          </dl>
+              <p class="treat-desc">{{ r.description || '—' }}</p>
+            </section>
 
-          <hr />
-          <div class="fw-semibold mb-2">Pièces jointes</div>
-          @if (attachments().length > 0) {
-            <div class="d-flex flex-column gap-2">
-              @for (att of attachments(); track att.attachmentId) {
-                <div class="d-flex flex-wrap align-items-center gap-3 p-3 border rounded-2 bg-body-tertiary">
-                  <div class="flex-shrink-0" style="width: 48px; height: 48px">
-                    @if (previewUrls()[att.attachmentId]; as preview) {
-                      <img
-                        [src]="preview"
-                        [alt]="att.fileName"
-                        class="border rounded"
-                        style="width: 48px; height: 48px; object-fit: cover; cursor: pointer"
-                        (click)="viewAttachment(att)"
-                      />
-                    } @else if (isAudio(att)) {
-                      <div
-                        class="border rounded d-flex align-items-center justify-content-center bg-white text-success fw-semibold"
-                        style="width: 48px; height: 48px; font-size: 0.55rem"
-                        title="Message vocal"
-                      >
-                        AUDIO
-                      </div>
-                    } @else if (isPdf(att)) {
-                      <div
-                        class="border rounded d-flex align-items-center justify-content-center bg-white text-danger fw-semibold"
-                        style="width: 48px; height: 48px; font-size: 0.65rem"
-                        (click)="viewAttachment(att)"
-                        role="button"
-                      >
-                        PDF
-                      </div>
-                    } @else {
-                      <div
-                        class="border rounded d-flex align-items-center justify-content-center bg-white text-body-secondary"
-                        style="width: 48px; height: 48px; font-size: 0.6rem"
-                        (click)="viewAttachment(att)"
-                        role="button"
-                      >
-                        Fichier
-                      </div>
-                    }
-                  </div>
-                  <div class="flex-grow-1" style="min-width: 10rem">
-                    <div class="small fw-semibold text-break">
-                      {{ att.fileName }}
-                      @if (isAudio(att)) {
-                        <span class="badge text-bg-success ms-1">Vocal</span>
-                      }
-                    </div>
-                    <div class="small text-body-secondary">
-                      {{ formatSize(att.fileSize) }}
-                    </div>
-                    @if (audioUrls()[att.attachmentId]; as audioSrc) {
-                      <audio class="mt-2 w-100" style="max-width: 18rem; height: 2.25rem" controls [src]="audioSrc" preload="metadata"></audio>
-                    }
-                  </div>
-                  <div class="d-flex gap-1">
-                    @if (!isAudio(att)) {
-                      <button cButton color="info" variant="outline" size="sm" type="button" (click)="viewAttachment(att)">
-                        Voir
-                      </button>
-                    }
-                    <button
-                      cButton
-                      color="primary"
-                      variant="outline"
-                      size="sm"
-                      type="button"
-                      [disabled]="downloadingId() === att.attachmentId"
-                      (click)="downloadAttachment(att)"
-                    >
-                      {{ downloadingId() === att.attachmentId ? '…' : 'Télécharger' }}
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="text-body-secondary small py-2">Aucune pièce jointe.</div>
-          }
-        </div>
-      </section>
-
-      <!-- 2. Informations du voyageur -->
-      <section class="mb-4">
-        <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Informations du voyageur</h6>
-        @if (isAnonymous()) {
-          <div class="p-3 border rounded-2 bg-body-tertiary">
-            <c-badge color="secondary" class="me-2">Anonyme</c-badge>
-            <strong>Voyageur anonyme</strong>
-            <p class="mb-0 mt-2 small text-body-secondary">
-              Aucune identité n’a été renseignée lors du dépôt du signalement.
-            </p>
-          </div>
-        } @else {
-          <div class="p-3 border rounded-2">
-            <div class="mb-2">
-              <c-badge color="success">Authentifié</c-badge>
-            </div>
-            <dl class="row mb-0 gy-2">
-              <dt class="col-sm-4 text-body-secondary">Nom complet</dt>
-              <dd class="col-sm-8 mb-0">{{ r.passenger?.name || '—' }}</dd>
-              <dt class="col-sm-4 text-body-secondary">Adresse e-mail</dt>
-              <dd class="col-sm-8 mb-0">{{ r.passenger?.email || '—' }}</dd>
-              <dt class="col-sm-4 text-body-secondary">Téléphone</dt>
-              <dd class="col-sm-8 mb-0">{{ r.passenger?.phoneNumber || '—' }}</dd>
-            </dl>
-          </div>
-        }
-      </section>
-
-        @if (existingReplies().length > 0) {
-          <section class="mb-4">
-            <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Échanges</h6>
-            @for (reply of existingReplies(); track reply.replyId) {
-              <article
-                class="reply-line mb-2 p-3 border rounded-2"
-                [class.reply-line--internal]="reply.replyType === internalNote"
-              >
-                <span class="material-symbols-outlined" aria-hidden="true">{{
-                  reply.replyType === internalNote ? 'lock' : 'chat'
-                }}</span>
-                <div>
-                  <div class="small text-body-secondary mb-1">
-                    {{ replyTypeLabel(reply.replyType) }} · {{ replyAuthorLabel(reply.authorType) }}
-                    · {{ reply.replyDate | date: 'dd/MM/yyyy HH:mm' }}
-                  </div>
-                  @if (reply.replyType === internalNote) {
-                    <div class="small fw-semibold mb-1">Note interne — visible uniquement par TRANSTU</div>
+            <section class="treat-card">
+              <h6>Voyageur</h6>
+              @if (passengerMode() === 'anonymous') {
+                <c-badge color="secondary">Anonyme</c-badge>
+                <p class="treat-hint">Aucune identité n’a été renseignée. Une demande de complément n’est pas possible.</p>
+              } @else {
+                <div class="mb-2">
+                  @if (passengerMode() === 'tracked') {
+                    <c-badge color="success">Avec suivi</c-badge>
+                  } @else {
+                    <c-badge color="warning">Contact sans compte</c-badge>
                   }
-                  <p class="mb-0" style="white-space: pre-wrap;">{{ reply.message }}</p>
                 </div>
-              </article>
-            }
-          </section>
-        }
-
-        <!-- 2. Réponse de l'agent -->
-        <section class="mb-4">
-          <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">Réponse de l'agent</h6>
-          <c-row class="g-3">
-            <c-col xs="12" md="6">
-              <label cLabel for="reply-kind">Type de message</label>
-              <select
-                cSelect
-                id="reply-kind"
-                class="form-select"
-                formControlName="replyType"
-                (change)="onReplyTypeChange()"
-              >
-                @for (kind of replyTypes; track kind.value) {
-                  <option [value]="kind.value">{{ kind.label }}</option>
+                <dl class="row mb-0 gy-1 small">
+                  <dt class="col-sm-4 text-body-secondary">Nom</dt>
+                  <dd class="col-sm-8 mb-0">{{ r.passenger?.name || '—' }}</dd>
+                  <dt class="col-sm-4 text-body-secondary">E-mail</dt>
+                  <dd class="col-sm-8 mb-0">{{ r.passenger?.email || '—' }}</dd>
+                  <dt class="col-sm-4 text-body-secondary">Téléphone</dt>
+                  <dd class="col-sm-8 mb-0">{{ r.passenger?.phoneNumber || '—' }}</dd>
+                </dl>
+                @if (passengerMode() === 'contact') {
+                  <p class="treat-hint">Ce contact n’a pas de compte de suivi. Vous pouvez répondre, pas demander un complément.</p>
                 }
-              </select>
-            </c-col>
-            <c-col xs="12">
-              <label cLabel for="reply-message">Message *</label>
-              <textarea
-                cFormControl
-                id="reply-message"
-                formControlName="message"
-                rows="5"
-                class="form-control"
-                placeholder="Rédigez votre réponse au voyageur…"
-                [class.is-invalid]="submitted() && form.controls.message.invalid"
-              ></textarea>
-              @if (submitted() && form.controls.message.invalid) {
-                <div class="invalid-feedback d-block">Le message est obligatoire (max. 2000 caractères).</div>
               }
-            </c-col>
-            <c-col md="6">
-              <label cLabel for="reply-status">Statut</label>
-              <select cSelect id="reply-status" formControlName="statusId" class="form-select">
-                <option value="">Conserver le statut actuel</option>
-                @for (s of statuses(); track s.statusId) {
-                  <option [value]="s.statusId">{{ s.label }}</option>
-                }
-              </select>
-            </c-col>
-            <c-col md="6">
+            </section>
+
+            <section class="treat-card">
+              <h6>Pièces jointes</h6>
+              @if (attachments().length > 0) {
+                <div class="d-flex flex-column gap-2">
+                  @for (att of attachments(); track att.attachmentId) {
+                    <div class="d-flex flex-wrap align-items-center gap-3 p-2 border rounded-2 bg-body-tertiary">
+                      <div class="flex-shrink-0" style="width: 48px; height: 48px">
+                        @if (previewUrls()[att.attachmentId]; as preview) {
+                          <img
+                            [src]="preview"
+                            [alt]="att.fileName"
+                            class="border rounded"
+                            style="width: 48px; height: 48px; object-fit: cover; cursor: pointer"
+                            (click)="viewAttachment(att)"
+                          />
+                        } @else if (isAudio(att)) {
+                          <div
+                            class="border rounded d-flex align-items-center justify-content-center bg-white text-success fw-semibold"
+                            style="width: 48px; height: 48px; font-size: 0.55rem"
+                            title="Message vocal"
+                          >
+                            AUDIO
+                          </div>
+                        } @else if (isPdf(att)) {
+                          <div
+                            class="border rounded d-flex align-items-center justify-content-center bg-white text-danger fw-semibold"
+                            style="width: 48px; height: 48px; font-size: 0.65rem"
+                            (click)="viewAttachment(att)"
+                            role="button"
+                          >
+                            PDF
+                          </div>
+                        } @else {
+                          <div
+                            class="border rounded d-flex align-items-center justify-content-center bg-white text-body-secondary"
+                            style="width: 48px; height: 48px; font-size: 0.6rem"
+                            (click)="viewAttachment(att)"
+                            role="button"
+                          >
+                            Fichier
+                          </div>
+                        }
+                      </div>
+                      <div class="flex-grow-1" style="min-width: 10rem">
+                        <div class="small fw-semibold text-break">
+                          {{ att.fileName }}
+                          @if (isAudio(att)) {
+                            <span class="badge text-bg-success ms-1">Vocal</span>
+                          }
+                        </div>
+                        <div class="small text-body-secondary">{{ formatSize(att.fileSize) }}</div>
+                        @if (audioUrls()[att.attachmentId]; as audioSrc) {
+                          <audio class="mt-2 w-100" style="max-width: 18rem; height: 2.25rem" controls [src]="audioSrc" preload="metadata"></audio>
+                        }
+                      </div>
+                      <div class="d-flex gap-1">
+                        @if (!isAudio(att)) {
+                          <button cButton color="info" variant="outline" size="sm" type="button" (click)="viewAttachment(att)">
+                            Voir
+                          </button>
+                        }
+                        <button
+                          cButton
+                          color="primary"
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          [disabled]="downloadingId() === att.attachmentId"
+                          (click)="downloadAttachment(att)"
+                        >
+                          {{ downloadingId() === att.attachmentId ? '…' : 'Télécharger' }}
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="mb-0 small text-body-secondary">Aucune pièce jointe.</p>
+              }
+            </section>
+
+            @if (existingReplies().length > 0) {
+              <section class="treat-card treat-thread">
+                <h6>Échanges</h6>
+                <ol class="thread">
+                  @for (group of exchangeGroups(); track group.replies[0].replyId) {
+                    @if (group.label) {
+                      <li class="thread__day">{{ group.label }}</li>
+                    }
+                    @for (reply of group.replies; track reply.replyId) {
+                      <li
+                        class="thread__event"
+                        [class.thread__event--passenger]="reply.authorType === 'PASSENGER'"
+                        [class.thread__event--ask]="reply.replyType === complementRequest"
+                        [class.thread__event--note]="reply.replyType === internalNote"
+                      >
+                        <span class="thread__mark" aria-hidden="true">
+                          <span class="material-symbols-outlined">{{ exchangeIcon(reply) }}</span>
+                        </span>
+                        <article class="thread__card">
+                          <header class="thread__head">
+                            <strong>{{ replyAuthorLabel(reply.authorType) }}</strong>
+                            <time>{{ reply.replyDate | date: 'HH:mm' }}</time>
+                          </header>
+                          <p class="thread__kind">{{ replyTypeLabel(reply.replyType) }}</p>
+                          @if (reply.replyType === internalNote) {
+                            <p class="thread__note">Visible uniquement par TRANSTU</p>
+                          }
+                          <p class="thread__text">{{ reply.message }}</p>
+                        </article>
+                      </li>
+                    }
+                  }
+                </ol>
+              </section>
+            }
+          </div>
+
+          <section class="treat-form">
+            <h6>Traitement</h6>
+            <label cLabel for="reply-kind">Type de message</label>
+            <select
+              cSelect
+              id="reply-kind"
+              class="form-select"
+              formControlName="replyType"
+              (change)="onReplyTypeChange()"
+            >
+              @for (kind of availableReplyTypes(); track kind.value) {
+                <option [value]="kind.value">{{ kind.label }}</option>
+              }
+            </select>
+            @if (form.controls.replyType.value === complementRequest) {
+              <p class="treat-hint">Le statut passera à « Demande de complément ». Le voyageur pourra répondre depuis son suivi.</p>
+            }
+
+            <label cLabel class="mt-3" for="reply-message">Message *</label>
+            <textarea
+              cFormControl
+              id="reply-message"
+              formControlName="message"
+              rows="6"
+              class="form-control"
+              [placeholder]="form.controls.replyType.value === complementRequest
+                ? 'Précisez l’information demandée au voyageur…'
+                : 'Rédigez votre réponse au voyageur…'"
+              [class.is-invalid]="submitted() && form.controls.message.invalid"
+            ></textarea>
+            <div class="treat-count">{{ form.controls.message.value.length }}/2000</div>
+            @if (submitted() && form.controls.message.invalid) {
+              <div class="invalid-feedback d-block">Le message est obligatoire (max. 2000 caractères).</div>
+            }
+
+            <label cLabel class="mt-2" for="reply-status">Statut</label>
+            <select cSelect id="reply-status" formControlName="statusId" class="form-select">
+              <option value="">Conserver le statut actuel</option>
+              @for (s of statuses(); track s.statusId) {
+                <option [value]="s.statusId">{{ s.label }}</option>
+              }
+            </select>
+            @if (form.controls.replyType.value === complementRequest) {
+              <p class="treat-hint">Le statut est fixé automatiquement pour une demande de complément.</p>
+            }
+
+            <div class="mt-3">
               @if (canUpdatePriority()) {
                 <label cLabel for="reply-priority">Priorité (interne)</label>
                 <select cSelect id="reply-priority" formControlName="priority" class="form-select">
@@ -243,66 +243,49 @@
                 </select>
               } @else {
                 <label cLabel>Priorité (interne)</label>
-                <div class="form-control-plaintext">{{ r.priority || '—' }}</div>
+                <div class="form-control-plaintext py-0">{{ r.priority || '—' }}</div>
               }
-            </c-col>
-          </c-row>
-        </section>
+            </div>
 
-        <!-- 3. Options d'envoi et de visibilité -->
-        <section class="mb-2">
-          <h6 class="text-uppercase text-body-secondary small fw-semibold mb-3">
-            Options d'envoi et de visibilité
-          </h6>
+            <div class="mt-3 p-3 border rounded-2 bg-white">
+              @if (hasPassengerEmail()) {
+                <div class="form-check">
+                  <input
+                    cFormControl
+                    class="form-check-input"
+                    type="checkbox"
+                    id="reply-send-email"
+                    formControlName="sendEmail"
+                    [disabled]="form.controls.replyType.value === internalNote || !form.controls.publicResponse.value"
+                  />
+                  <label class="form-check-label" for="reply-send-email">Envoyer par e-mail au voyageur</label>
+                </div>
+                <p class="treat-hint mb-0">
+                  Destinataire : <strong>{{ passengerEmail() }}</strong>. Vérifiez aussi les indésirables.
+                </p>
+              } @else {
+                <div class="alert alert-warning mb-0" role="status">
+                  Aucun e-mail n'est renseigné. La réponse sera uniquement disponible dans le suivi du signalement.
+                </div>
+              }
+            </div>
 
-          @if (hasPassengerEmail()) {
-            <div class="p-3 border rounded-2 mb-3">
+            <div class="mt-2 p-3 border rounded-2 bg-white">
               <div class="form-check">
                 <input
                   cFormControl
                   class="form-check-input"
                   type="checkbox"
-                  id="reply-send-email"
-                  formControlName="sendEmail"
-                  [disabled]="form.controls.replyType.value === internalNote || !form.controls.publicResponse.value"
+                  id="reply-publish"
+                  formControlName="publish"
+                  [disabled]="form.controls.replyType.value === internalNote"
                 />
-                <label class="form-check-label" for="reply-send-email">
-                  Transférer
-                </label>
+                <label class="form-check-label" for="reply-publish">Épingler à l'accueil</label>
               </div>
-              <div class="small">
-                <span class="text-body-secondary">Destinataire :</span>
-                <div class="fw-semibold">{{ passengerEmail() }}</div>
-                <p class="small text-body-secondary mb-0 mt-2">
-                  L'e-mail part vers cette adresse (pas celle de l'agent). Vérifiez aussi les
-                  indésirables.
-                </p>
-              </div>
+              <p class="treat-hint mb-0">Si cochée, le signalement pourra apparaître sur l'espace d'accueil public.</p>
             </div>
-          } @else {
-            <div class="alert alert-warning mb-3" role="status">
-              Aucun e-mail n'est renseigné. La réponse sera uniquement disponible dans le suivi du
-              signalement.
-            </div>
-          }
-
-          <div class="p-3 border rounded-2">
-            <div class="form-check">
-              <input
-                cFormControl
-                class="form-check-input"
-                type="checkbox"
-                id="reply-publish"
-                formControlName="publish"
-                [disabled]="form.controls.replyType.value === internalNote"
-              />
-              <label class="form-check-label" for="reply-publish">Épingler à l'accueil</label>
-            </div>
-            <p class="small text-body-secondary mb-0 mt-2">
-              Si cochée, le signalement / la réponse pourra apparaître sur l'espace d'accueil public.
-            </p>
-          </div>
-        </section>
+          </section>
+        </div>
       </form>
     }
   </c-modal-body>

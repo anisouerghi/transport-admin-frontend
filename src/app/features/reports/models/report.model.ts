@@ -23,6 +23,8 @@ export interface Passenger {
   active?: boolean;
   /** True si aucune identité renseignée (voyageur anonyme). */
   anonymous?: boolean;
+  /** True si le voyageur a un compte et peut répondre à un complément. */
+  tracked?: boolean;
 }
 
 export interface Status {
