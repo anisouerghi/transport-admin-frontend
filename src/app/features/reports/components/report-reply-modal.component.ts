@@ -85,6 +85,26 @@ const NATURE_ORDER = [
       color: var(--cui-secondary-color, #6c757d);
       font-size: 0.82rem;
     }
+    .treat-duration {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0.55rem 0 0;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: #f5bf00;
+      color: #3d2e00;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+    .treat-duration .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 1.1rem;
+      line-height: 1;
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
     .treat-grid {
       display: grid;
       gap: 1rem;
@@ -444,6 +464,52 @@ export class ReportReplyModalComponent implements OnChanges {
   }
 
   /** Anonyme, contact sans compte, ou voyageur avec suivi. */
+  /** Durée réelle dépôt → clôture. L'heure actuelle n'est jamais utilisée. */
+  processingDurationLabel(report: Report): string {
+    const seconds = this.durationSeconds(report.creationDate, report.closureDate);
+    if (seconds != null) {
+      return `Durée de traitement : ${this.formatDuration(seconds)}`;
+    }
+    const closed =
+      !!report.closureDate ||
+      ['RESOLVED', 'CLOSED'].includes((report.status?.code ?? '').toUpperCase());
+    return closed ? 'Durée de traitement : non disponible' : 'Traitement en cours';
+  }
+
+  private durationSeconds(creation?: string, closure?: string): number | null {
+    if (!creation || !closure) {
+      return null;
+    }
+    const start = new Date(creation).getTime();
+    const end = new Date(closure).getTime();
+    if (Number.isNaN(start) || Number.isNaN(end) || end < start) {
+      return null;
+    }
+    return Math.floor((end - start) / 1000);
+  }
+
+  private formatDuration(totalSeconds: number): string {
+    if (totalSeconds < 60) {
+      return "moins d'une minute";
+    }
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const parts: string[] = [];
+    if (days === 1) {
+      parts.push('1 jour');
+    } else if (days > 1) {
+      parts.push(`${days} jours`);
+    }
+    if (hours > 0) {
+      parts.push(`${hours} h`);
+    }
+    if (minutes > 0) {
+      parts.push(`${minutes} min`);
+    }
+    return parts.join(' ');
+  }
+
   passengerMode(): 'anonymous' | 'contact' | 'tracked' {
     if (this.isAnonymous()) {
       return 'anonymous';
