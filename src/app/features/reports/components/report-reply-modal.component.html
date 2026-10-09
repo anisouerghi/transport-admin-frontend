@@ -16,10 +16,17 @@
           <p class="treat-kicker">Référence</p>
           <p class="treat-ref">{{ r.reference }}</p>
           <p class="treat-meta">
-            {{ r.creationDate | date: 'dd/MM/yyyy HH:mm' }}
+            Déposé le {{ r.creationDate | date: 'dd/MM/yyyy HH:mm' }}
             @if (r.transportSupport?.label) {
               · {{ r.transportSupport?.label }}
             }
+          </p>
+          @if (r.closureDate) {
+            <p class="treat-meta">Clôturé le {{ r.closureDate | date: 'dd/MM/yyyy HH:mm' }}</p>
+          }
+          <p class="treat-duration">
+            <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+            {{ processingDurationLabel(r) }}
           </p>
         </div>
         @if (r.status?.label) {
@@ -33,13 +40,12 @@
             <section class="treat-card">
               <h6>Dossier</h6>
               <label cLabel for="reply-report-type">Nature du signalement</label>
-              <select cSelect id="reply-report-type" class="form-select mb-3" formControlName="reportTypeId">
+              <select cSelect id="reply-report-type" class="form-select" formControlName="reportTypeId">
                 <option value="">Non définie</option>
                 @for (t of reportTypes(); track t.reportTypeId) {
                   <option [value]="t.reportTypeId">{{ t.label }}</option>
                 }
               </select>
-              <p class="treat-desc">{{ r.description || '—' }}</p>
             </section>
 
             <section class="treat-card">
@@ -150,11 +156,23 @@
               }
             </section>
 
-            @if (existingReplies().length > 0) {
-              <section class="treat-card treat-thread">
-                <h6>Échanges</h6>
-                <ol class="thread">
-                  @for (group of exchangeGroups(); track group.replies[0].replyId) {
+            <section class="treat-card treat-thread">
+              <h6>Échanges</h6>
+              <ol class="thread">
+                <li class="thread__event thread__event--passenger">
+                  <span class="thread__mark" aria-hidden="true">
+                    <span class="material-symbols-outlined">description</span>
+                  </span>
+                  <article class="thread__card">
+                    <header class="thread__head">
+                      <strong>Voyageur</strong>
+                      <time>{{ r.creationDate | date: 'dd/MM/yyyy HH:mm' }}</time>
+                    </header>
+                    <p class="thread__kind">Signalement</p>
+                    <p class="thread__text">{{ r.description || '—' }}</p>
+                  </article>
+                </li>
+                @for (group of exchangeGroups(); track group.replies[0].replyId) {
                     @if (group.label) {
                       <li class="thread__day">{{ group.label }}</li>
                     }
@@ -182,9 +200,8 @@
                       </li>
                     }
                   }
-                </ol>
-              </section>
-            }
+              </ol>
+            </section>
           </div>
 
           <section class="treat-form">

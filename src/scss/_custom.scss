@@ -7,10 +7,10 @@
 
 :root {
   --cui-font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
-  --cui-primary: #007a4d; // Vert TRANSTU
-  --cui-primary-rgb: 0, 122, 77;
-  --cui-accent: #ffc107; // Jaune TRANSTU
-  --cui-accent-rgb: 255, 193, 7;
+  --cui-primary: #003b7f;
+  --cui-primary-rgb: 0, 59, 127;
+  --cui-accent: #f5bf00;
+  --cui-accent-rgb: 245, 191, 0;
   --cui-border-color-professional: #b1b7c1;
   --cui-input-focus-border-color: var(--cui-primary);
   --cui-input-focus-box-shadow: 0 0 0 0.2rem rgba(var(--cui-primary-rgb), 0.15);
@@ -55,9 +55,9 @@ body {
   border-color: var(--cui-primary);
 
   &:hover {
-    background-color: #00633e;
-    border-color: #004229;
-    box-shadow: 0 4px 12px rgba(0, 122, 77, 0.3);
+    background-color: #002a5c;
+    border-color: #002a5c;
+    box-shadow: 0 4px 12px rgba(0, 59, 127, 0.22);
   }
 }
 
