@@ -21,6 +21,7 @@ export type AdminApiConfig = {
     auditLogs: string;
     passengers: string;
     statistics: string;
+    dashboard: string;
   };
 };
 
@@ -42,6 +43,7 @@ function buildApiConfig(): AdminApiConfig {
       auditLogs: api('/api/admin/audit-logs'),
       passengers: api('/api/admin/passengers'),
       statistics: api('/api/admin/statistics'),
+      dashboard: api('/api/admin/dashboard'),
     },
   };
 }
