@@ -71,3 +71,101 @@
     }
   </c-card-body>
 </c-card>
+
+<c-card class="mb-4">
+  <c-card-header>
+    <strong>Satisfaction des voyageurs</strong>
+  </c-card-header>
+  <c-card-body>
+    <p class="text-body-secondary">
+      Ces chiffres mesurent la perception du voyageur sur la réponse apportée, et non une note de l'agent.
+      Les pourcentages de niveau portent sur les avis reçus. Le taux de participation a pour dénominateur
+      les signalements clôturés du filtre.
+    </p>
+    <c-row class="g-3 mb-3">
+      <c-col md="3">
+        <label cLabel for="sat-from">Du</label>
+        <input cFormControl id="sat-from" type="date" [(ngModel)]="from" />
+      </c-col>
+      <c-col md="3">
+        <label cLabel for="sat-to">Au</label>
+        <input cFormControl id="sat-to" type="date" [(ngModel)]="to" />
+      </c-col>
+      <c-col md="3">
+        <label cLabel for="sat-type">Nature</label>
+        <select cSelect id="sat-type" [(ngModel)]="reportTypeId">
+          <option value="">Toutes</option>
+          @for (type of reportTypes(); track type.reportTypeId) {
+            <option [value]="type.reportTypeId">{{ type.labelFr || type.label }}</option>
+          }
+        </select>
+      </c-col>
+      <c-col md="3">
+        <label cLabel for="sat-support">Support</label>
+        <input cFormControl id="sat-support" type="number" min="1" [(ngModel)]="transportSupportId" placeholder="Identifiant" />
+      </c-col>
+    </c-row>
+    <button cButton color="primary" type="button" class="mb-3" (click)="loadSatisfaction()" [disabled]="satisfactionLoading()">
+      Filtrer
+    </button>
+
+    @if (satisfactionLoading()) {
+      <div class="text-center py-4"><c-spinner></c-spinner></div>
+    } @else if (satisfaction(); as sat) {
+      <c-row class="g-3 mb-4">
+        <c-col sm="6" lg="3">
+          <div class="text-body-secondary small">Dossiers clôturés éligibles</div>
+          <div class="fs-4 fw-semibold">{{ sat.eligibleClosedReports }}</div>
+        </c-col>
+        <c-col sm="6" lg="3">
+          <div class="text-body-secondary small">Avis reçus</div>
+          <div class="fs-4 fw-semibold">{{ sat.evaluationsReceived }}</div>
+        </c-col>
+        <c-col sm="6" lg="3">
+          <div class="text-body-secondary small">Taux de participation</div>
+          <div class="fs-4 fw-semibold">{{ sat.participationRate }} %</div>
+        </c-col>
+        <c-col sm="6" lg="3">
+          <div class="text-body-secondary small">Satisfaits</div>
+          <div class="fs-4 fw-semibold">{{ sat.satisfiedCount }} · {{ sat.satisfiedRate }} %</div>
+        </c-col>
+        <c-col sm="6" lg="3">
+          <div class="text-body-secondary small">Moyennement satisfaits</div>
+          <div class="fs-4 fw-semibold">{{ sat.partialCount }} · {{ sat.partialRate }} %</div>
+        </c-col>
+        <c-col sm="6" lg="3">
+          <div class="text-body-secondary small">Non satisfaits</div>
+          <div class="fs-4 fw-semibold">{{ sat.dissatisfiedCount }} · {{ sat.dissatisfiedRate }} %</div>
+        </c-col>
+      </c-row>
+      @if (comments().length === 0) {
+        <p class="text-body-secondary mb-0">Aucun commentaire pour ce filtre.</p>
+      } @else {
+        <table cTable hover responsive>
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Nature</th>
+              <th>Support</th>
+              <th>Avis</th>
+              <th>Commentaire</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of comments(); track item.reference + item.createdAt) {
+              <tr>
+                <td>{{ item.reference }}</td>
+                <td>{{ item.reportTypeLabel }}</td>
+                <td>{{ item.supportLabel }}</td>
+                <td>{{ levelLabel(item.level) }}</td>
+                <td>{{ item.comment }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    } @else {
+      <p class="text-body-secondary mb-0">Impossible de charger les évaluations.</p>
+    }
+  </c-card-body>
+</c-card>
