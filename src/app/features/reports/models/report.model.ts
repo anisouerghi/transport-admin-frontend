@@ -63,6 +63,32 @@ export interface Report {
   /** true si au moins une réponse agent est enregistrée (backend). */
   replied?: boolean;
   attachments?: ReportAttachment[];
+  satisfactionLevel?: string | null;
+  satisfactionComment?: string | null;
+  satisfactionCreatedAt?: string | null;
+}
+
+export function reportIsClosed(report: {
+  closureDate?: string | null;
+  status?: { code?: string } | null;
+}): boolean {
+  return (
+    !!report.closureDate ||
+    ['RESOLVED', 'CLOSED'].includes((report.status?.code ?? '').toUpperCase())
+  );
+}
+
+export function satisfactionLabel(level?: string | null): string {
+  switch (level) {
+    case 'SATISFAIT':
+      return 'Satisfait';
+    case 'MOYENNEMENT_SATISFAIT':
+      return 'Moyennement satisfait';
+    case 'NON_SATISFAIT':
+      return 'Non satisfait';
+    default:
+      return '—';
+  }
 }
 
 export interface ReportFilter {

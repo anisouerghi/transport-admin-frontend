@@ -21,18 +21,8 @@ import { NotificationService } from '../../../core/services/notification.service
 import { ReportType } from '../../report-types/models/report-type.model';
 import { ReportTypesService } from '../../report-types/services/report-types.service';
 import { AGENT_REPLY_TYPE, AGENT_REPLY_TYPE_OPTIONS, AgentReplyType, replyAuthorLabel, replyTypeLabel } from '../models/reply-kinds';
-import { PRIORITY_OPTIONS, Priority, ReportReply, ReportReplyRequest, Report, ReportAttachment, Status } from '../models/report.model';
+import { PRIORITY_OPTIONS, Priority, ReportReply, ReportReplyRequest, Report, ReportAttachment, Status, reportIsClosed, satisfactionLabel } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
-
-/** Ordre fixe des natures voyageur (ReportType). */
-const NATURE_ORDER = [
-  'COMPLAINT',
-  'ASSAULT',
-  'INCIDENT',
-  'SUGGESTION',
-  'THANKS',
-  'OTHER',
-] as const;
 
 @Component({
   selector: 'app-report-reply-modal',
@@ -333,6 +323,13 @@ export class ReportReplyModalComponent implements OnChanges {
     replyType: AGENT_REPLY_TYPE.response as AgentReplyType,
   });
 
+  readonly satisfactionLabel = satisfactionLabel;
+
+  isClosedReport(): boolean {
+    const current = this.detail() ?? this.report;
+    return !!current && reportIsClosed(current);
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     this.submitted.set(false);
     if (!this.visible) {
@@ -340,6 +337,7 @@ export class ReportReplyModalComponent implements OnChanges {
       this.clearPreviews();
       this.attachments.set([]);
       this.existingReplies.set([]);
+      this.form.enable({ emitEvent: false });
       this.form.reset({
         reportTypeId: '',
         message: '',
@@ -372,6 +370,12 @@ export class ReportReplyModalComponent implements OnChanges {
     if (!allowed) {
       this.form.patchValue({ replyType: AGENT_REPLY_TYPE.response });
       this.onReplyTypeChange();
+    }
+  }
+
+  private lockIfClosed(report: Report | null): void {
+    if (report && reportIsClosed(report)) {
+      this.form.disable({ emitEvent: false });
     }
   }
 
@@ -553,6 +557,9 @@ export class ReportReplyModalComponent implements OnChanges {
   }
 
   submit(): void {
+    if (this.isClosedReport()) {
+      return;
+    }
     this.submitted.set(true);
     const current = this.detail() ?? this.report;
     if (this.form.invalid || !current) {
@@ -661,6 +668,7 @@ export class ReportReplyModalComponent implements OnChanges {
         this.detail.set(r);
         const email = r.passenger?.email?.trim() ?? '';
         const hasEmail = this.isValidEmail(email);
+        this.form.enable({ emitEvent: false });
         this.form.reset({
           reportTypeId: r.reportTypeId ?? '',
           message: '',
@@ -673,7 +681,9 @@ export class ReportReplyModalComponent implements OnChanges {
         });
         this.enableMessageOptions();
         this.alignReplyType();
+        this.lockIfClosed(r);
         this.loadExistingRepliesAndAttachments(reportId);
+        this.ensureCurrentType();
       },
       error: () => {
         // Fallback sur le report de la liste
@@ -691,6 +701,8 @@ export class ReportReplyModalComponent implements OnChanges {
         });
         this.enableMessageOptions();
         this.alignReplyType();
+        this.lockIfClosed(fallback ?? null);
+        this.ensureCurrentType();
         if (fallback) {
           this.loadExistingRepliesAndAttachments(fallback.reportId);
         } else {
@@ -820,21 +832,41 @@ export class ReportReplyModalComponent implements OnChanges {
 
   private loadReportTypes(): void {
     this.reportTypesService.getActive().subscribe({
-      next: (types) => this.reportTypes.set(this.orderNatures(types)),
+      next: (types) => {
+        this.reportTypes.set(this.sortTypesFromDatabase(types));
+        this.ensureCurrentType();
+      },
       error: () => {},
     });
   }
 
-  private orderNatures(types: ReportType[]): ReportType[] {
-    const byCode = new Map(types.map((t) => [t.code?.toUpperCase(), t]));
-    const ordered: ReportType[] = [];
-    for (const code of NATURE_ORDER) {
-      const hit = byCode.get(code);
-      if (hit) {
-        ordered.push(hit);
-      }
+  /** Conserve l'ordre `priority` enregistré en base. N'écarte aucun type renvoyé. */
+  private sortTypesFromDatabase(types: ReportType[]): ReportType[] {
+    return [...types].sort(
+      (a, b) =>
+        (a.priority ?? 100) - (b.priority ?? 100)
+        || (a.labelFr || a.label || '').localeCompare(b.labelFr || b.label || '', 'fr'),
+    );
+  }
+
+  /** Le type déjà déposé reste visible même s'il n'est plus dans la liste active. */
+  private ensureCurrentType(): void {
+    const current = this.detail() ?? this.report;
+    const id = current?.reportTypeId;
+    if (!current || id == null || this.reportTypes().some((type) => type.reportTypeId === id)) {
+      return;
     }
-    return ordered;
+    const label = current.reportTypeLabel || 'Type du signalement';
+    this.reportTypes.update((types) => [
+      ...types,
+      {
+        reportTypeId: id,
+        code: current.reportTypeCode ?? '',
+        label,
+        labelFr: current.reportTypeLabel,
+        active: true,
+      },
+    ]);
   }
 
   private isValidEmail(value: string): boolean {

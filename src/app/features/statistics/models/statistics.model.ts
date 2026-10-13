@@ -27,6 +27,61 @@ export interface SatisfactionFilter {
   transportSupportId?: number;
 }
 
+export type ReportAnalysisGrouping =
+  | 'NONE'
+  | 'REPORT_TYPE'
+  | 'SUPPORT_TYPE'
+  | 'SUPPORT'
+  | 'SUPPORT_TYPE_THEN_SUPPORT'
+  | 'REPORT_TYPE_THEN_SUPPORT_TYPE'
+  | 'SUPPORT_TYPE_THEN_REPORT_TYPE';
+
+export interface ReportAnalysisRequest {
+  title?: string;
+  subtitle?: string;
+  from?: string;
+  to?: string;
+  reportTypeId?: number;
+  supportTypeId?: number;
+  transportSupportId?: number;
+  grouping?: ReportAnalysisGrouping;
+}
+
+export interface ReportAnalysisOption {
+  id: number;
+  label: string;
+}
+
+export interface ReportAnalysisOptions {
+  reportTypes: ReportAnalysisOption[];
+  supportTypes: ReportAnalysisOption[];
+}
+
+export interface ReportAnalysisRow {
+  kind: 'GROUP' | 'SUBTOTAL' | 'TOTAL' | string;
+  label: string;
+  count: number;
+  rate: number;
+  lastReportAt?: string;
+}
+
+export interface ReportAnalysisResult {
+  title: string;
+  subtitle?: string;
+  periodLabel: string;
+  reportTypeLabel: string;
+  supportTypeLabel: string;
+  supportLabel: string;
+  grouping: string;
+  groupingLabel: string;
+  totalReports: number;
+  groupCount: number;
+  detailTruncated: boolean;
+  detailLimit: number;
+  generatedAt: string;
+  rows: ReportAnalysisRow[];
+}
+
 /** Vue d'ensemble statistiques (squelette extensible). */
 export interface StatisticsOverview {
   totalReports: number;

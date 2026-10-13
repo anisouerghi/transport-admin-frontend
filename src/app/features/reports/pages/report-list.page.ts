@@ -22,7 +22,9 @@ import { NotificationService } from '../../../core/services/notification.service
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
 import { ReportDetailModalComponent } from '../components/report-detail-modal.component';
 import { ReportReplyModalComponent } from '../components/report-reply-modal.component';
-import { Report, ReportFilter, Status } from '../models/report.model';
+import { ReportType } from '../../report-types/models/report-type.model';
+import { ReportTypesService } from '../../report-types/services/report-types.service';
+import { Report, ReportFilter, Status, reportIsClosed, satisfactionLabel } from '../models/report.model';
 import { ReportsService } from '../services/reports.service';
 
 @Component({
@@ -53,13 +55,17 @@ import { ReportsService } from '../services/reports.service';
   templateUrl: './report-list.page.html',
 })
 export class ReportListPage implements OnInit {
+  readonly satisfactionLabel = satisfactionLabel;
+  readonly reportIsClosed = reportIsClosed;
   private readonly reportsService = inject(ReportsService);
+  private readonly reportTypesService = inject(ReportTypesService);
   private readonly notifications = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(false);
   readonly reports = signal<Report[]>([]);
   readonly statuses = signal<Status[]>([]);
+  readonly reportTypes = signal<ReportType[]>([]);
   readonly totalElements = signal(0);
   readonly totalPages = signal(1);
   readonly page = signal(0);
@@ -79,6 +85,7 @@ export class ReportListPage implements OnInit {
 
   ngOnInit(): void {
     this.loadStatuses();
+    this.loadReportTypes();
     this.load();
   }
 
@@ -121,6 +128,21 @@ export class ReportListPage implements OnInit {
     this.reportsService.getStatuses().subscribe({
       next: (statuses) => this.statuses.set(statuses),
       error: () => {},
+    });
+  }
+
+  private loadReportTypes(): void {
+    this.reportTypesService.getActive().subscribe({
+      next: (types) => {
+        this.reportTypes.set(
+          [...types].sort(
+            (a, b) =>
+              (a.priority ?? 100) - (b.priority ?? 100)
+              || (a.labelFr || a.label || '').localeCompare(b.labelFr || b.label || '', 'fr'),
+          ),
+        );
+      },
+      error: () => this.reportTypes.set([]),
     });
   }
 

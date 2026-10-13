@@ -1,171 +1,320 @@
-<c-card class="mb-4">
-  <c-card-header class="d-flex justify-content-between align-items-center">
-    <strong>Rapports &amp; Statistiques</strong>
-    <button cButton color="secondary" variant="outline" type="button" (click)="load()" [disabled]="loading()">
-      Actualiser
-    </button>
-  </c-card-header>
-  <c-card-body>
-    <p class="text-body-secondary mb-4">
-      Vue d'ensemble des indicateurs. Cette page accueillera progressivement les tableaux de bord et
-      statistiques détaillées.
+<header class="stats-head">
+  <div>
+    <p class="stats-kicker">TRANSTU</p>
+    <h1 class="stats-title">Rapports et statistiques</h1>
+    <p class="stats-lead">
+      Volume du service, puis perception des voyageurs sur la réponse apportée.
     </p>
+  </div>
+  <button cButton color="secondary" variant="outline" type="button" (click)="load()" [disabled]="loading()">
+    Actualiser
+  </button>
+</header>
 
+<section class="panel mb-4">
+  <div class="panel__head">
+    <span class="material-symbols-outlined" aria-hidden="true">insights</span>
+    Vue d'ensemble
+  </div>
+  <div class="panel__body">
     @if (loading()) {
-      <div class="text-center py-5">
-        <c-spinner></c-spinner>
-      </div>
+      <div class="text-center py-5"><c-spinner></c-spinner></div>
     } @else if (overview(); as data) {
-      <c-row class="g-3">
-        <c-col sm="6" lg="4" xl="2">
-          <c-card>
-            <c-card-body>
-              <div class="text-body-secondary small">Signalements</div>
-              <div class="fs-4 fw-semibold">{{ data.totalReports }}</div>
-            </c-card-body>
-          </c-card>
-        </c-col>
-        <c-col sm="6" lg="4" xl="2">
-          <c-card>
-            <c-card-body>
-              <div class="text-body-secondary small">Supports</div>
-              <div class="fs-4 fw-semibold">{{ data.totalSupports }}</div>
-            </c-card-body>
-          </c-card>
-        </c-col>
-        <c-col sm="6" lg="4" xl="2">
-          <c-card>
-            <c-card-body>
-              <div class="text-body-secondary small">Utilisateurs</div>
-              <div class="fs-4 fw-semibold">{{ data.totalUsers }}</div>
-            </c-card-body>
-          </c-card>
-        </c-col>
-        <c-col sm="6" lg="4" xl="2">
-          <c-card>
-            <c-card-body>
-              <div class="text-body-secondary small">Voyageurs</div>
-              <div class="fs-4 fw-semibold">{{ data.totalPassengers }}</div>
-            </c-card-body>
-          </c-card>
-        </c-col>
-        <c-col sm="6" lg="4" xl="2">
-          <c-card>
-            <c-card-body>
-              <div class="text-body-secondary small">Voyageurs actifs</div>
-              <div class="fs-4 fw-semibold text-success">{{ data.activePassengers }}</div>
-            </c-card-body>
-          </c-card>
-        </c-col>
-        <c-col sm="6" lg="4" xl="2">
-          <c-card>
-            <c-card-body>
-              <div class="text-body-secondary small">Voyageurs désactivés</div>
-              <div class="fs-4 fw-semibold text-secondary">{{ data.inactivePassengers }}</div>
-            </c-card-body>
-          </c-card>
-        </c-col>
-      </c-row>
+      <div class="kpi-grid">
+        <article class="kpi tone-navy">
+          <span class="kpi__icon" aria-hidden="true">assignment</span>
+          <div class="kpi__label">Signalements</div>
+          <div class="kpi__value">{{ data.totalReports }}</div>
+        </article>
+        <article class="kpi tone-teal">
+          <span class="kpi__icon" aria-hidden="true">directions_bus</span>
+          <div class="kpi__label">Supports</div>
+          <div class="kpi__value">{{ data.totalSupports }}</div>
+        </article>
+        <article class="kpi tone-navy">
+          <span class="kpi__icon" aria-hidden="true">badge</span>
+          <div class="kpi__label">Utilisateurs</div>
+          <div class="kpi__value">{{ data.totalUsers }}</div>
+        </article>
+        <article class="kpi tone-gold">
+          <span class="kpi__icon" aria-hidden="true">groups</span>
+          <div class="kpi__label">Voyageurs</div>
+          <div class="kpi__value">{{ data.totalPassengers }}</div>
+        </article>
+        <article class="kpi tone-ok">
+          <span class="kpi__icon" aria-hidden="true">check_circle</span>
+          <div class="kpi__label">Voyageurs actifs</div>
+          <div class="kpi__value">{{ data.activePassengers }}</div>
+        </article>
+        <article class="kpi tone-slate">
+          <span class="kpi__icon" aria-hidden="true">person_off</span>
+          <div class="kpi__label">Voyageurs désactivés</div>
+          <div class="kpi__value">{{ data.inactivePassengers }}</div>
+        </article>
+      </div>
     } @else {
-      <p class="text-body-secondary mb-0">Impossible de charger les statistiques.</p>
+      <p class="empty">Impossible de charger les statistiques.</p>
     }
-  </c-card-body>
-</c-card>
+  </div>
+</section>
 
-<c-card class="mb-4">
-  <c-card-header>
-    <strong>Satisfaction des voyageurs</strong>
-  </c-card-header>
-  <c-card-body>
-    <p class="text-body-secondary">
-      Ces chiffres mesurent la perception du voyageur sur la réponse apportée, et non une note de l'agent.
-      Les pourcentages de niveau portent sur les avis reçus. Le taux de participation a pour dénominateur
-      les signalements clôturés du filtre.
+<div class="stats-split">
+<section class="panel">
+  <div class="panel__head">
+    <span class="material-symbols-outlined" aria-hidden="true">sentiment_satisfied</span>
+    Satisfaction des voyageurs
+  </div>
+  <div class="panel__body">
+    <p class="stats-lead mb-3">
+      Ces chiffres mesurent la perception du voyageur. Les pourcentages de niveau portent sur les avis reçus.
+      Le taux de participation compare ces avis aux signalements clôturés du filtre.
     </p>
-    <c-row class="g-3 mb-3">
-      <c-col md="3">
+
+    <form class="filters" (ngSubmit)="loadSatisfaction()">
+      <div>
         <label cLabel for="sat-from">Du</label>
-        <input cFormControl id="sat-from" type="date" [(ngModel)]="from" />
-      </c-col>
-      <c-col md="3">
+        <input cFormControl id="sat-from" type="date" [(ngModel)]="from" name="from" />
+      </div>
+      <div>
         <label cLabel for="sat-to">Au</label>
-        <input cFormControl id="sat-to" type="date" [(ngModel)]="to" />
-      </c-col>
-      <c-col md="3">
-        <label cLabel for="sat-type">Nature</label>
-        <select cSelect id="sat-type" [(ngModel)]="reportTypeId">
-          <option value="">Toutes</option>
+        <input cFormControl id="sat-to" type="date" [(ngModel)]="to" name="to" />
+      </div>
+      <div>
+        <label cLabel for="sat-type">Type de signalement</label>
+        <select cSelect id="sat-type" [(ngModel)]="reportTypeId" name="reportTypeId">
+          <option value="">Tous</option>
           @for (type of reportTypes(); track type.reportTypeId) {
             <option [value]="type.reportTypeId">{{ type.labelFr || type.label }}</option>
           }
         </select>
-      </c-col>
-      <c-col md="3">
+      </div>
+      <div>
         <label cLabel for="sat-support">Support</label>
-        <input cFormControl id="sat-support" type="number" min="1" [(ngModel)]="transportSupportId" placeholder="Identifiant" />
-      </c-col>
-    </c-row>
-    <button cButton color="primary" type="button" class="mb-3" (click)="loadSatisfaction()" [disabled]="satisfactionLoading()">
-      Filtrer
-    </button>
+        <input cFormControl id="sat-support" type="number" min="1" [(ngModel)]="transportSupportId" name="support" placeholder="Identifiant" />
+      </div>
+      <button cButton color="primary" type="submit" [disabled]="satisfactionLoading()">
+        Filtrer
+      </button>
+    </form>
 
     @if (satisfactionLoading()) {
       <div class="text-center py-4"><c-spinner></c-spinner></div>
     } @else if (satisfaction(); as sat) {
-      <c-row class="g-3 mb-4">
-        <c-col sm="6" lg="3">
-          <div class="text-body-secondary small">Dossiers clôturés éligibles</div>
-          <div class="fs-4 fw-semibold">{{ sat.eligibleClosedReports }}</div>
-        </c-col>
-        <c-col sm="6" lg="3">
-          <div class="text-body-secondary small">Avis reçus</div>
-          <div class="fs-4 fw-semibold">{{ sat.evaluationsReceived }}</div>
-        </c-col>
-        <c-col sm="6" lg="3">
-          <div class="text-body-secondary small">Taux de participation</div>
-          <div class="fs-4 fw-semibold">{{ sat.participationRate }} %</div>
-        </c-col>
-        <c-col sm="6" lg="3">
-          <div class="text-body-secondary small">Satisfaits</div>
-          <div class="fs-4 fw-semibold">{{ sat.satisfiedCount }} · {{ sat.satisfiedRate }} %</div>
-        </c-col>
-        <c-col sm="6" lg="3">
-          <div class="text-body-secondary small">Moyennement satisfaits</div>
-          <div class="fs-4 fw-semibold">{{ sat.partialCount }} · {{ sat.partialRate }} %</div>
-        </c-col>
-        <c-col sm="6" lg="3">
-          <div class="text-body-secondary small">Non satisfaits</div>
-          <div class="fs-4 fw-semibold">{{ sat.dissatisfiedCount }} · {{ sat.dissatisfiedRate }} %</div>
-        </c-col>
-      </c-row>
+      <div class="sat-grid mb-3">
+        <article class="kpi tone-navy">
+          <span class="kpi__icon" aria-hidden="true">inventory_2</span>
+          <div class="kpi__label">Dossiers clôturés</div>
+          <div class="kpi__value">{{ sat.eligibleClosedReports }}</div>
+        </article>
+        <article class="kpi tone-gold">
+          <span class="kpi__icon" aria-hidden="true">reviews</span>
+          <div class="kpi__label">Avis reçus</div>
+          <div class="kpi__value">{{ sat.evaluationsReceived }}</div>
+        </article>
+        <article class="kpi tone-navy">
+          <span class="kpi__icon" aria-hidden="true">percent</span>
+          <div class="kpi__label">Participation</div>
+          <div class="kpi__value">{{ sat.participationRate }} %</div>
+          <div class="meter" style="color: #003b7f">
+            <span [style.width.%]="sat.participationRate"></span>
+          </div>
+        </article>
+      </div>
+
+      @if (sat.evaluationsReceived > 0) {
+        <div class="mix" role="img" aria-label="Répartition des avis">
+          <span class="mix__ok" [style.flex]="sat.satisfiedCount || 0"></span>
+          <span class="mix__mid" [style.flex]="sat.partialCount || 0"></span>
+          <span class="mix__bad" [style.flex]="sat.dissatisfiedCount || 0"></span>
+        </div>
+      }
+
+      <div class="sat-grid mb-4">
+        <article class="kpi tone-ok">
+          <span class="kpi__icon" aria-hidden="true">sentiment_satisfied</span>
+          <div class="kpi__label">Satisfaits</div>
+          <div class="kpi__value">{{ sat.satisfiedRate }} %</div>
+          <div class="kpi__hint">{{ sat.satisfiedCount }} avis</div>
+          <div class="meter" style="color: #1f8a4c">
+            <span [style.width.%]="sat.satisfiedRate"></span>
+          </div>
+        </article>
+        <article class="kpi tone-mid">
+          <span class="kpi__icon" aria-hidden="true">sentiment_neutral</span>
+          <div class="kpi__label">Moyennement satisfaits</div>
+          <div class="kpi__value">{{ sat.partialRate }} %</div>
+          <div class="kpi__hint">{{ sat.partialCount }} avis</div>
+          <div class="meter" style="color: #d97706">
+            <span [style.width.%]="sat.partialRate"></span>
+          </div>
+        </article>
+        <article class="kpi tone-bad">
+          <span class="kpi__icon" aria-hidden="true">sentiment_dissatisfied</span>
+          <div class="kpi__label">Non satisfaits</div>
+          <div class="kpi__value">{{ sat.dissatisfiedRate }} %</div>
+          <div class="kpi__hint">{{ sat.dissatisfiedCount }} avis</div>
+          <div class="meter" style="color: #c0392b">
+            <span [style.width.%]="sat.dissatisfiedRate"></span>
+          </div>
+        </article>
+      </div>
+
       @if (comments().length === 0) {
-        <p class="text-body-secondary mb-0">Aucun commentaire pour ce filtre.</p>
+        <p class="empty">Aucun commentaire pour ce filtre.</p>
       } @else {
-        <table cTable hover responsive>
-          <thead>
-            <tr>
-              <th>Référence</th>
-              <th>Nature</th>
-              <th>Support</th>
-              <th>Avis</th>
-              <th>Commentaire</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of comments(); track item.reference + item.createdAt) {
+        <div class="table-responsive">
+          <table class="comments">
+            <thead>
               <tr>
-                <td>{{ item.reference }}</td>
-                <td>{{ item.reportTypeLabel }}</td>
-                <td>{{ item.supportLabel }}</td>
-                <td>{{ levelLabel(item.level) }}</td>
-                <td>{{ item.comment }}</td>
+                <th>Référence</th>
+                <th>Type</th>
+                <th>Support</th>
+                <th>Avis</th>
+                <th>Commentaire</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (item of comments(); track item.reference + item.createdAt) {
+                <tr>
+                  <td><strong>{{ item.reference }}</strong></td>
+                  <td>{{ item.reportTypeLabel || '—' }}</td>
+                  <td>{{ item.supportLabel || '—' }}</td>
+                  <td><span [class]="levelClass(item.level)">{{ levelLabel(item.level) }}</span></td>
+                  <td>{{ item.comment || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     } @else {
-      <p class="text-body-secondary mb-0">Impossible de charger les évaluations.</p>
+      <p class="empty">Impossible de charger les évaluations.</p>
     }
-  </c-card-body>
-</c-card>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel__head">
+    <span class="material-symbols-outlined" aria-hidden="true">query_stats</span>
+    Analyse des signalements
+  </div>
+  <div class="panel__body">
+    <p class="stats-lead mb-3">Filtrez, regroupez et exportez les signalements selon vos critères.</p>
+    <form class="analysis-form" (ngSubmit)="loadAnalysis()">
+      <div>
+        <label cLabel for="an-title">Titre du rapport</label>
+        <input cFormControl id="an-title" [(ngModel)]="analysisTitle" name="analysisTitle" maxlength="160" />
+      </div>
+      <div>
+        <label cLabel for="an-subtitle">Sous-titre</label>
+        <input cFormControl id="an-subtitle" [(ngModel)]="analysisSubtitle" name="analysisSubtitle" maxlength="200" />
+      </div>
+      <div class="filters">
+        <div>
+          <label cLabel for="an-from">Du</label>
+          <input cFormControl id="an-from" type="date" [(ngModel)]="analysisFrom" name="analysisFrom" />
+        </div>
+        <div>
+          <label cLabel for="an-to">Au</label>
+          <input cFormControl id="an-to" type="date" [(ngModel)]="analysisTo" name="analysisTo" />
+        </div>
+      </div>
+      <div>
+        <label cLabel for="an-type">Type de signalement</label>
+        <select cSelect id="an-type" [(ngModel)]="analysisReportTypeId" name="analysisReportTypeId">
+          <option value="">Tous</option>
+          @for (type of analysisReportTypes(); track type.id) {
+            <option [value]="type.id">{{ type.label }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label cLabel for="an-support-type">Type de support</label>
+        <select cSelect id="an-support-type" [(ngModel)]="analysisSupportTypeId" name="analysisSupportTypeId" (ngModelChange)="onSupportTypeChange()">
+          <option value="">Tous</option>
+          @for (type of analysisSupportTypes(); track type.id) {
+            <option [value]="type.id">{{ type.label }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label cLabel for="an-support-query">Recherche de support</label>
+        <input cFormControl id="an-support-query" [(ngModel)]="analysisSupportQuery" name="analysisSupportQuery" placeholder="Référence ou libellé" (ngModelChange)="loadSupports()" />
+      </div>
+      <div>
+        <label cLabel for="an-support">Support précis</label>
+        <select cSelect id="an-support" [(ngModel)]="analysisSupportId" name="analysisSupportId">
+          <option value="">Tous</option>
+          @for (support of analysisSupports(); track support.id) {
+            <option [value]="support.id">{{ support.label }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label cLabel for="an-group">Regrouper les résultats par</label>
+        <select cSelect id="an-group" [(ngModel)]="analysisGrouping" name="analysisGrouping">
+          @for (group of groupings; track group.value) {
+            <option [value]="group.value">{{ group.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="analysis-actions">
+        <button cButton color="primary" type="submit" [disabled]="analysisLoading()">Appliquer les filtres</button>
+        <button cButton color="secondary" variant="outline" type="button" (click)="resetAnalysis()">Réinitialiser</button>
+        <button cButton color="primary" variant="outline" type="button" (click)="exportAnalysis('pdf')" [disabled]="exporting() !== null">
+          {{ exporting() === 'pdf' ? 'PDF…' : 'Exporter en PDF' }}
+        </button>
+        <button cButton color="primary" variant="outline" type="button" (click)="exportAnalysis('excel')" [disabled]="exporting() !== null">
+          {{ exporting() === 'excel' ? 'Excel…' : 'Exporter en Excel' }}
+        </button>
+      </div>
+    </form>
+
+    @if (analysisError()) {
+      <p class="empty mt-3">{{ analysisError() }}</p>
+    } @else if (analysisLoading()) {
+      <div class="text-center py-4"><c-spinner></c-spinner></div>
+    } @else if (analysis(); as result) {
+      <div class="sat-grid mt-3 mb-3">
+        <article class="kpi tone-navy">
+          <div class="kpi__label">Signalements</div>
+          <div class="kpi__value">{{ result.totalReports }}</div>
+        </article>
+        <article class="kpi tone-gold">
+          <div class="kpi__label">Groupes</div>
+          <div class="kpi__value">{{ result.groupCount }}</div>
+        </article>
+      </div>
+      @if (result.rows.length === 0) {
+        <p class="empty">Aucun signalement pour ces critères.</p>
+      } @else {
+        <div class="table-responsive">
+          <table class="comments">
+            <thead>
+              <tr>
+                <th>Groupe</th>
+                <th>Nombre</th>
+                <th>%</th>
+                <th>Dernier signalement</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of result.rows; track $index) {
+                <tr [class]="'kind-' + row.kind.toLowerCase()">
+                  <td>{{ row.label }}</td>
+                  <td>{{ row.count }}</td>
+                  <td>{{ row.rate }}</td>
+                  <td>{{ row.lastReportAt || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (result.detailTruncated) {
+          <p class="stats-lead mt-2">L'export Excel détaille au plus {{ result.detailLimit }} signalements.</p>
+        }
+      }
+    }
+  </div>
+</section>
+</div>

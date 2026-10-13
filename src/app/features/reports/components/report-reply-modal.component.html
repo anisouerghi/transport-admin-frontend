@@ -1,6 +1,6 @@
 <c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" size="xl">
   <c-modal-header>
-    <h5 cModalTitle>Traiter le signalement</h5>
+    <h5 cModalTitle>{{ isClosedReport() ? 'Signalement clôturé' : 'Traiter le signalement' }}</h5>
     <button cButtonClose (click)="close()" [disabled]="saving()"></button>
   </c-modal-header>
   <c-modal-body>
@@ -43,9 +43,26 @@
               <select cSelect id="reply-report-type" class="form-select" formControlName="reportTypeId">
                 <option value="">Non définie</option>
                 @for (t of reportTypes(); track t.reportTypeId) {
-                  <option [value]="t.reportTypeId">{{ t.label }}</option>
+                  <option [value]="t.reportTypeId">{{ t.labelFr || t.label }}</option>
                 }
               </select>
+            </section>
+
+            <section class="treat-card">
+              <h6>Avis du voyageur</h6>
+              @if (r.satisfactionLevel) {
+                <p class="mb-1"><strong>{{ satisfactionLabel(r.satisfactionLevel) }}</strong></p>
+                @if (r.satisfactionComment) {
+                  <p class="mb-1">{{ r.satisfactionComment }}</p>
+                }
+                @if (r.satisfactionCreatedAt) {
+                  <p class="treat-meta mb-0">Le {{ r.satisfactionCreatedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+                }
+              } @else if (isClosedReport()) {
+                <p class="mb-0 small text-body-secondary">Aucun avis enregistré.</p>
+              } @else {
+                <p class="mb-0 small text-body-secondary">L'avis pourra être donné après la clôture.</p>
+              }
             </section>
 
             <section class="treat-card">
@@ -206,6 +223,11 @@
 
           <section class="treat-form">
             <h6>Traitement</h6>
+            @if (isClosedReport()) {
+              <div class="alert alert-secondary" role="status">
+                Ce signalement est clôturé. Il ne peut plus être modifié.
+              </div>
+            }
             <label cLabel for="reply-kind">Type de message</label>
             <select
               cSelect
@@ -308,21 +330,23 @@
   </c-modal-body>
   <c-modal-footer>
     <button cButton color="secondary" variant="outline" type="button" (click)="close()" [disabled]="saving()">
-      Annuler
+      {{ isClosedReport() ? 'Fermer' : 'Annuler' }}
     </button>
-    <button
-      cButton
-      color="primary"
-      type="button"
-      (click)="submit()"
-      [disabled]="saving() || loadingReport() || (!report && !detail())"
-    >
-      @if (saving()) {
-        <c-spinner size="sm" class="me-2"></c-spinner>
-        Envoi…
-      } @else {
-        Enregistrer
-      }
-    </button>
+    @if (!isClosedReport()) {
+      <button
+        cButton
+        color="primary"
+        type="button"
+        (click)="submit()"
+        [disabled]="saving() || loadingReport() || (!report && !detail())"
+      >
+        @if (saving()) {
+          <c-spinner size="sm" class="me-2"></c-spinner>
+          Envoi…
+        } @else {
+          Enregistrer
+        }
+      </button>
+    }
   </c-modal-footer>
 </c-modal>
