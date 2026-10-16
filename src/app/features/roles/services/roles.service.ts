@@ -3,13 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api.config';
 import { ApiResponse } from '../../../shared/models/api-response.model';
-import { Permission, PermissionMatrix, Role, RoleRequest } from '../models/role.model';
+import { Permission, PermissionMatrix, Role, RoleRequest, RoleReportType } from '../models/role.model';
 
 @Injectable({ providedIn: 'root' })
 export class RolesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = API_CONFIG.admin.roles;
   private readonly permissionsUrl = API_CONFIG.admin.permissions;
+  private readonly reportTypesUrl = API_CONFIG.admin.reportTypes;
 
   getAll(): Observable<Role[]> {
     return this.http.get<ApiResponse<Role[]>>(this.baseUrl).pipe(map((res) => res.data ?? []));
@@ -41,5 +42,12 @@ export class RolesService {
     return this.http
       .get<ApiResponse<PermissionMatrix>>(`${this.permissionsUrl}/matrix`)
       .pipe(map((res) => res.data));
+  }
+
+  /** Types actifs pour l'affectation aux rôles. */
+  getActiveReportTypes(): Observable<RoleReportType[]> {
+    return this.http
+      .get<ApiResponse<RoleReportType[]>>(`${this.reportTypesUrl}/active`)
+      .pipe(map((res) => res.data ?? []));
   }
 }

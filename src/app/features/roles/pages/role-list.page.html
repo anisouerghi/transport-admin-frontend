@@ -15,6 +15,7 @@
               <th>Code</th>
               <th>Libellé</th>
               <th>Permissions</th>
+              <th>Types autorisés</th>
               <th>Actif</th>
               <th class="text-end">Actions</th>
             </tr>
@@ -29,6 +30,15 @@
                   <span class="text-body-secondary">{{ item.permissions.length || 0 }} permission(s)</span>
                 </td>
                 <td>
+                  @if (item.code === 'ADMIN') {
+                    <span class="text-body-secondary">Toutes (administrateur)</span>
+                  } @else if ((item.reportTypes?.length ?? 0) === 0) {
+                    <span class="text-warning">Aucun</span>
+                  } @else {
+                    <span class="text-body-secondary">{{ reportTypesSummary(item) }}</span>
+                  }
+                </td>
+                <td>
                   <c-badge [color]="item.active ? 'success' : 'secondary'">
                     {{ item.active ? 'Oui' : 'Non' }}
                   </c-badge>
@@ -39,7 +49,7 @@
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="6" class="text-center text-body-secondary py-4">Aucun rôle.</td></tr>
+              <tr><td colspan="7" class="text-center text-body-secondary py-4">Aucun rôle.</td></tr>
             }
           </tbody>
         </table>

@@ -9,6 +9,17 @@ export interface Permission {
   active: boolean;
 }
 
+/** Type de signalement affectable à un rôle. */
+export interface RoleReportType {
+  reportTypeId: number;
+  code: string;
+  label: string;
+  labelFr?: string | null;
+  labelAr?: string | null;
+  labelEn?: string | null;
+  active: boolean;
+}
+
 export interface Role {
   roleId: number;
   code: string;
@@ -16,6 +27,7 @@ export interface Role {
   description?: string | null;
   active: boolean;
   permissions: Permission[];
+  reportTypes?: RoleReportType[];
 }
 
 export interface RoleRequest {
@@ -24,6 +36,7 @@ export interface RoleRequest {
   description?: string;
   active?: boolean;
   permissionIds: number[];
+  reportTypeIds: number[];
 }
 
 export interface PermissionMatrix {

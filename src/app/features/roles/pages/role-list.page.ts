@@ -59,6 +59,18 @@ export class RoleListPage implements OnInit {
     });
   }
 
+  reportTypesSummary(item: Role): string {
+    const types = item.reportTypes ?? [];
+    if (types.length === 0) {
+      return 'Aucun';
+    }
+    const labels = types.map((t) => t.labelFr || t.label || t.code);
+    if (labels.length <= 3) {
+      return labels.join(', ');
+    }
+    return `${labels.slice(0, 3).join(', ')} (+${labels.length - 3})`;
+  }
+
   openCreate(): void {
     this.editing.set(null);
     this.formVisible.set(true);

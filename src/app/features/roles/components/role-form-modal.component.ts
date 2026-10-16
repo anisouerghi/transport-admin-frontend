@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   ButtonCloseDirective,
   ButtonDirective,
@@ -15,7 +15,7 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { NotificationService } from '../../../core/services/notification.service';
-import { PermissionMatrix, PermissionMatrixCell, Role, RoleRequest } from '../models/role.model';
+import { PermissionMatrix, PermissionMatrixCell, Role, RoleReportType, RoleRequest } from '../models/role.model';
 import { RolesService } from '../services/roles.service';
 
 @Component({
@@ -23,6 +23,7 @@ import { RolesService } from '../services/roles.service';
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    FormsModule,
     ModalComponent,
     ModalHeaderComponent,
     ModalTitleDirective,
@@ -50,8 +51,12 @@ export class RoleFormModalComponent implements OnChanges {
 
   readonly saving = signal(false);
   readonly loadingMatrix = signal(false);
+  readonly loadingReportTypes = signal(false);
   readonly matrix = signal<PermissionMatrix | null>(null);
   readonly selectedIds = signal<Set<number>>(new Set());
+  readonly selectedReportTypeIds = signal<Set<number>>(new Set());
+  readonly availableReportTypes = signal<RoleReportType[]>([]);
+  reportTypeQuery = '';
 
   readonly form = this.fb.nonNullable.group({
     code: ['', Validators.required],
@@ -63,6 +68,8 @@ export class RoleFormModalComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (this.visible) {
       this.loadMatrix();
+      this.loadReportTypes();
+      this.reportTypeQuery = '';
       if (this.item) {
         this.form.reset({
           code: this.item.code,
@@ -71,11 +78,37 @@ export class RoleFormModalComponent implements OnChanges {
           active: this.item.active,
         });
         this.selectedIds.set(new Set(this.item.permissions?.map((p) => p.permissionId) ?? []));
+        this.selectedReportTypeIds.set(
+          new Set(this.item.reportTypes?.map((t) => t.reportTypeId) ?? []),
+        );
       } else {
         this.form.reset({ code: '', label: '', description: '', active: true });
         this.selectedIds.set(new Set());
+        this.selectedReportTypeIds.set(new Set());
       }
     }
+  }
+
+  filteredReportTypes(): RoleReportType[] {
+    const q = this.reportTypeQuery.trim().toLowerCase();
+    const selected = this.selectedReportTypeIds();
+    const active = this.availableReportTypes();
+    const assignedInactive = (this.item?.reportTypes ?? []).filter(
+      (t) => !t.active && selected.has(t.reportTypeId),
+    );
+    const merged = [...active];
+    for (const type of assignedInactive) {
+      if (!merged.some((t) => t.reportTypeId === type.reportTypeId)) {
+        merged.push(type);
+      }
+    }
+    if (!q) {
+      return merged;
+    }
+    return merged.filter((t) => {
+      const label = `${t.labelFr || ''} ${t.label || ''} ${t.code || ''}`.toLowerCase();
+      return label.includes(q);
+    });
   }
 
   cell(moduleCode: string, action: string): PermissionMatrixCell | null {
@@ -92,6 +125,17 @@ export class RoleFormModalComponent implements OnChanges {
 
   isChecked(id: number): boolean {
     return this.selectedIds().has(id);
+  }
+
+  toggleReportType(id: number, checked: boolean): void {
+    const next = new Set(this.selectedReportTypeIds());
+    if (checked) next.add(id);
+    else next.delete(id);
+    this.selectedReportTypeIds.set(next);
+  }
+
+  isReportTypeChecked(id: number): boolean {
+    return this.selectedReportTypeIds().has(id);
   }
 
   toggleModuleRow(moduleCode: string, checked: boolean): void {
@@ -122,6 +166,7 @@ export class RoleFormModalComponent implements OnChanges {
       description: raw.description || undefined,
       active: raw.active,
       permissionIds: [...this.selectedIds()],
+      reportTypeIds: [...this.selectedReportTypeIds()],
     };
     this.saving.set(true);
     const req$ = this.item
@@ -146,6 +191,20 @@ export class RoleFormModalComponent implements OnChanges {
         this.loadingMatrix.set(false);
       },
       error: () => this.loadingMatrix.set(false),
+    });
+  }
+
+  private loadReportTypes(): void {
+    this.loadingReportTypes.set(true);
+    this.service.getActiveReportTypes().subscribe({
+      next: (types) => {
+        this.availableReportTypes.set(types);
+        this.loadingReportTypes.set(false);
+      },
+      error: () => {
+        this.availableReportTypes.set([]);
+        this.loadingReportTypes.set(false);
+      },
     });
   }
 }
